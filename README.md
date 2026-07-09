@@ -22,3 +22,12 @@ A polished Safari/PWA prototype for logging Australian tax deduction expenses, a
 ## Notes
 
 This is a prototype estimator only. It uses 2025–26 Australian resident tax rates, LITO and a simplified 2% Medicare levy option. It does not replace ATO/myTax calculation or professional tax advice.
+
+
+## v2.1 cache-fix upload note
+
+This build uses cache-busted `styles.css?v=2.1.0` and `app.js?v=2.1.0` references and a network-first service worker. It is intended to replace the older cache-first PWA build.
+
+Upload the contents of this folder directly into the root of the GitHub Pages repository. Do not upload the folder as a subfolder unless GitHub Pages is configured to serve from that subfolder.
+
+If an old version still appears on iPhone, remove the old Home Screen app shortcut, clear Safari website data for `jnikhanj.github.io`, open the site again in Safari, and add it to Home Screen again.
