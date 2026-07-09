@@ -1,35 +1,24 @@
 # Lodgr
 
-Lodgr is a local-first Safari/PWA prototype for tracking Australian tax deduction expenses, storing receipt evidence, and estimating a simple refund/payable outcome.
+A polished Safari/PWA prototype for logging Australian tax deduction expenses, attaching receipt evidence markers, switching between taxpayer profiles, and estimating refund/payable outcomes.
 
-## Run locally
+## Files
 
-Open `index.html` directly in a browser, or use a local server:
+- `index.html` — app shell and screen layout
+- `styles.css` — premium mobile app UI styling
+- `app.js` — local storage, profiles, claims, CSV export and estimator
+- `manifest.webmanifest` — PWA configuration
+- `sw.js` — offline cache service worker
+- `assets/icons/` — home screen, maskable and favicon assets
 
-```bash
-python3 -m http.server 8000
-```
+## Deploy with GitHub Pages
 
-Then open:
-
-```text
-http://localhost:8000
-```
-
-## Deploy to GitHub Pages
-
-1. Create a GitHub repository.
-2. Upload all files in this folder.
-3. Go to **Settings → Pages**.
-4. Select **Deploy from branch**.
-5. Choose the main branch and root folder.
-6. Open the published URL in Safari.
-7. On iPhone, use **Share → Add to Home Screen**.
+1. Upload all files to the repository root.
+2. Go to GitHub repository Settings → Pages.
+3. Select the branch and root folder.
+4. Open the published URL in Safari.
+5. Use Share → Add to Home Screen.
 
 ## Notes
 
-- This is a prototype estimator only.
-- It currently uses 2025–26 Australian resident tax brackets.
-- Medicare levy handling is simplified to a 2% toggle.
-- It does not calculate HELP/HECS, Medicare levy reduction/exemption, MLS, spouse details, private health insurance rebates, or all tax offsets.
-- Receipt files are stored locally in IndexedDB on the device/browser.
+This is a prototype estimator only. It uses 2025–26 Australian resident tax rates, LITO and a simplified 2% Medicare levy option. It does not replace ATO/myTax calculation or professional tax advice.

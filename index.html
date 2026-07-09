@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#f8f5ef" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Lodgr" />
 
   <title>Lodgr</title>
-  <meta name="description" content="Lodgr - tax deduction tracker and refund estimator." />
+  <meta name="description" content="Lodgr — elegant tax deduction tracking and refund estimation for Australian taxpayers." />
 
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
@@ -18,291 +18,358 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,-25..0&icon_names=add,attach_file,calculate,calendar_month,category,check_circle,close,delete,download,home,person,receipt_long,request_quote,school,settings,summarize,upload_file,visibility,warning,work&display=block"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&icon_names=add,analytics,arrow_forward,attach_file,bolt,calendar_month,calculate,check_circle,close,cloud_upload,download,edit,folder,home,keyboard_arrow_down,lock,paid,person,receipt_long,search,settings,shield,swap_horiz,tab_recent,warning,workspaces&display=block"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
-  <main class="app-shell" id="home">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Tax year 2025–26</p>
-        <h1>Lodgr</h1>
-      </div>
+  <main class="app-shell" aria-label="Lodgr app">
+    <div class="status-spacer" aria-hidden="true"></div>
 
-      <div class="topbar-actions">
-        <button class="round-button" type="button" aria-label="Tax estimate" data-scroll-target="tax">
-          <span class="material-symbols-outlined">calculate</span>
+    <section class="screen is-active" id="screen-home" data-screen="home" aria-labelledby="home-title">
+      <header class="app-header header-floating">
+        <div>
+          <p class="caption">2025–26 tax year</p>
+          <h1 id="home-title">Lodgr</h1>
+        </div>
+        <button class="icon-button soft" type="button" data-open-settings aria-label="Settings">
+          <span class="material-symbols-rounded">settings</span>
         </button>
-        <button class="round-button" type="button" aria-label="Settings" id="openSettings">
-          <span class="material-symbols-outlined">settings</span>
+      </header>
+
+      <div class="hero-card">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-topline">
+          <span class="mini-chip dark"><span class="pulse-dot"></span><span id="activeProfileLabel">Personal profile</span></span>
+          <span class="mini-chip muted-chip">Estimate</span>
+        </div>
+        <p class="hero-label">Expected outcome</p>
+        <div class="hero-amount" id="homeOutcome">$0</div>
+        <p class="hero-copy" id="homeOutcomeCopy">Add income and deductions to build your estimate.</p>
+        <div class="hero-metrics">
+          <div>
+            <span>Deductions</span>
+            <strong id="homeDeductions">$0</strong>
+          </div>
+          <div>
+            <span>Receipts</span>
+            <strong id="homeReceiptRatio">0/0</strong>
+          </div>
+          <div>
+            <span>Review</span>
+            <strong id="homeReviewCount">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-grid" aria-label="Quick actions">
+        <button class="quick-action" type="button" data-open-expense>
+          <span class="icon-orb green"><span class="material-symbols-rounded">add</span></span>
+          <strong>Add</strong>
+          <small>Expense</small>
+        </button>
+        <button class="quick-action" type="button" data-open-expense data-receipt-first>
+          <span class="icon-orb blue"><span class="material-symbols-rounded">receipt_long</span></span>
+          <strong>Receipt</strong>
+          <small>Vault</small>
+        </button>
+        <button class="quick-action" type="button" data-jump="tax">
+          <span class="icon-orb purple"><span class="material-symbols-rounded">calculate</span></span>
+          <strong>Refund</strong>
+          <small>Estimate</small>
         </button>
       </div>
-    </header>
 
-    <section class="hero-summary" aria-label="Current profile summary">
-      <div>
-        <span id="activeProfileLabel">Selected profile</span>
-        <strong id="activeProfileName">You</strong>
-      </div>
-      <div>
-        <span>Claimable</span>
-        <strong id="activeProfileTotal">$0.00</strong>
-      </div>
+      <section class="content-card no-pad">
+        <div class="section-title padded">
+          <div>
+            <p class="caption">Fast switch</p>
+            <h2>Profiles</h2>
+          </div>
+          <button class="small-link" type="button" data-add-profile>New</button>
+        </div>
+        <div class="profile-carousel" id="profileCarousel" aria-label="Profiles"></div>
+      </section>
+
+      <section class="content-card no-pad">
+        <div class="section-title padded">
+          <div>
+            <p class="caption">Latest</p>
+            <h2>Recent claims</h2>
+          </div>
+          <button class="small-link" type="button" data-jump="log">View all</button>
+        </div>
+        <div class="expense-feed compact" id="homeExpenseFeed"></div>
+      </section>
     </section>
 
-    <section class="action-grid" aria-label="Quick actions">
-      <button class="action-tile" type="button" id="openExpenseModal">
-        <span class="icon-pill icon-green">
-          <span class="material-symbols-outlined">add</span>
-        </span>
-        <span>Add Expense</span>
-      </button>
+    <section class="screen" id="screen-log" data-screen="log" aria-labelledby="log-title">
+      <header class="app-header">
+        <div>
+          <p class="caption">Claim log</p>
+          <h1 id="log-title">Expenses</h1>
+        </div>
+        <button class="icon-button accent" type="button" data-open-expense aria-label="Add expense">
+          <span class="material-symbols-rounded">add</span>
+        </button>
+      </header>
 
-      <button class="action-tile" type="button" id="scanReceipt">
-        <span class="icon-pill icon-blue">
-          <span class="material-symbols-outlined">receipt_long</span>
-        </span>
-        <span>Receipt Vault</span>
-      </button>
+      <div class="search-box">
+        <span class="material-symbols-rounded">search</span>
+        <input id="searchInput" type="search" placeholder="Search merchant, category, note..." />
+      </div>
 
-      <button class="action-tile" type="button" data-scroll-target="tax">
-        <span class="icon-pill icon-purple">
-          <span class="material-symbols-outlined">request_quote</span>
-        </span>
-        <span>Estimate Tax</span>
-      </button>
+      <div class="chip-row" id="categoryChips" aria-label="Category filters"></div>
+
+      <section class="content-card no-pad fill-card">
+        <div class="section-title padded sticky-card-title">
+          <div>
+            <p class="caption">Evidence-first</p>
+            <h2>All logged claims</h2>
+          </div>
+          <span class="soft-count" id="logCount">0</span>
+        </div>
+        <div class="expense-feed" id="logExpenseFeed"></div>
+      </section>
     </section>
 
-    <section class="section-block">
-      <div class="section-heading">
-        <h2>Profiles</h2>
-        <button class="text-button" type="button" id="addProfile">+ Add</button>
-      </div>
-      <div class="profile-strip" id="profileStrip"></div>
+    <section class="screen" id="screen-tax" data-screen="tax" aria-labelledby="tax-title">
+      <header class="app-header">
+        <div>
+          <p class="caption">Australian resident estimate</p>
+          <h1 id="tax-title">Tax</h1>
+        </div>
+        <button class="icon-button soft" type="button" data-export-csv aria-label="Export CSV">
+          <span class="material-symbols-rounded">download</span>
+        </button>
+      </header>
+
+      <section class="tax-result-card" aria-live="polite">
+        <p class="caption light">Estimated result</p>
+        <div class="tax-result-row">
+          <strong id="taxOutcome">$0</strong>
+          <span id="taxOutcomeBadge" class="result-pill">Neutral</span>
+        </div>
+        <p id="taxOutcomeHint">Enter income, PAYG withheld and deductions to estimate tax-time outcome.</p>
+      </section>
+
+      <section class="content-card">
+        <div class="section-title">
+          <div>
+            <p class="caption">Inputs</p>
+            <h2>Income details</h2>
+          </div>
+          <span class="soft-count">2025–26</span>
+        </div>
+        <form class="form-grid" id="taxForm" autocomplete="off">
+          <label class="field">
+            <span>Gross employment income</span>
+            <input id="grossIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="85000" />
+          </label>
+          <label class="field">
+            <span>PAYG tax withheld</span>
+            <input id="taxWithheld" type="number" inputmode="decimal" min="0" step="0.01" placeholder="18500" />
+          </label>
+          <label class="field">
+            <span>Other taxable income</span>
+            <input id="otherIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
+          </label>
+          <label class="toggle-row">
+            <input id="includeMedicare" type="checkbox" checked />
+            <span>
+              <strong>Include basic Medicare levy</strong>
+              <small>Uses a simplified 2% estimate; review exemption/reduction separately.</small>
+            </span>
+          </label>
+        </form>
+      </section>
+
+      <section class="content-card no-pad">
+        <div class="section-title padded">
+          <div>
+            <p class="caption">Breakdown</p>
+            <h2>Calculation</h2>
+          </div>
+        </div>
+        <div class="breakdown-list">
+          <div><span>Total income</span><strong id="calcIncome">$0</strong></div>
+          <div><span>Logged deductions</span><strong id="calcDeductions">$0</strong></div>
+          <div><span>Taxable income</span><strong id="calcTaxable">$0</strong></div>
+          <div><span>Tax before offsets</span><strong id="calcTaxBeforeOffsets">$0</strong></div>
+          <div><span>LITO estimate</span><strong id="calcLito">$0</strong></div>
+          <div><span>Medicare levy estimate</span><strong id="calcMedicare">$0</strong></div>
+          <div class="total-line"><span>Estimated tax payable</span><strong id="calcFinalTax">$0</strong></div>
+        </div>
+      </section>
+
+      <p class="disclaimer">This is an estimate only and is not tax advice. Confirm deductions, offsets, Medicare levy, residency and HELP/loan obligations before lodging.</p>
     </section>
 
-    <section class="section-block" id="log">
-      <div class="section-heading">
-        <h2>Recent Expenses</h2>
-        <span class="muted" id="expenseCount">0 items</span>
-      </div>
-
-      <div class="toolbar-row">
-        <div class="search-wrap">
-          <span class="material-symbols-outlined">category</span>
-          <select id="categoryFilter" aria-label="Filter expenses by category">
-            <option value="all">All categories</option>
-            <option value="education">Education / CPD</option>
-            <option value="equipment">Equipment</option>
-            <option value="subscription">Subscription / software</option>
-            <option value="registration">Registration / membership</option>
-            <option value="travel">Work travel</option>
-            <option value="clothing">Uniform / protective clothing</option>
-            <option value="other">Other</option>
-          </select>
+    <section class="screen" id="screen-profile" data-screen="profile" aria-labelledby="profile-title">
+      <header class="app-header">
+        <div>
+          <p class="caption">Household setup</p>
+          <h1 id="profile-title">Profile</h1>
         </div>
-      </div>
+        <button class="icon-button accent" type="button" data-add-profile aria-label="Add profile">
+          <span class="material-symbols-rounded">add</span>
+        </button>
+      </header>
 
-      <div class="expense-list" id="expenseList"></div>
+      <section class="content-card no-pad">
+        <div class="section-title padded">
+          <div>
+            <p class="caption">Taxpayers</p>
+            <h2>Profiles</h2>
+          </div>
+          <span class="soft-count" id="profileCount">0</span>
+        </div>
+        <div class="profile-list" id="profileList"></div>
+      </section>
 
-      <button class="view-row" type="button" id="exportCsv">
-        <span class="material-symbols-outlined">download</span>
-        <span>Export CSV</span>
-        <span class="view-arrow">→</span>
+      <section class="content-card">
+        <div class="section-title">
+          <div>
+            <p class="caption">Data</p>
+            <h2>Export & storage</h2>
+          </div>
+          <span class="icon-orb mini amber"><span class="material-symbols-rounded">lock</span></span>
+        </div>
+        <div class="settings-list">
+          <button type="button" data-export-csv><span><strong>Export expense CSV</strong><small>Download claims for accountant or myTax prep.</small></span><span class="material-symbols-rounded">arrow_forward</span></button>
+          <button type="button" id="resetDemo"><span><strong>Reset demo data</strong><small>Clear local sample data and start again.</small></span><span class="material-symbols-rounded">arrow_forward</span></button>
+        </div>
+      </section>
+
+      <section class="content-card app-credit">
+        <div class="app-mark-small">L</div>
+        <div>
+          <h2>Lodgr</h2>
+          <p>Track claims. Keep proof. Lodge smarter.</p>
+        </div>
+      </section>
+    </section>
+
+    <nav class="tab-bar" aria-label="Primary navigation">
+      <button type="button" class="tab is-active" data-tab="home">
+        <span class="material-symbols-rounded">home</span><small>Home</small>
       </button>
-    </section>
-
-    <section class="section-block estimate-card" id="tax">
-      <div class="section-heading">
-        <h2>Tax Estimate</h2>
-        <span class="badge badge-neutral">Prototype</span>
-      </div>
-
-      <form class="tax-form" id="taxForm">
-        <label>
-          <span>Gross income</span>
-          <input id="grossIncome" inputmode="decimal" type="number" min="0" step="0.01" placeholder="85000" />
-        </label>
-
-        <label>
-          <span>PAYG withheld</span>
-          <input id="taxWithheld" inputmode="decimal" type="number" min="0" step="0.01" placeholder="18500" />
-        </label>
-
-        <label>
-          <span>Other income</span>
-          <input id="otherIncome" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0" />
-        </label>
-
-        <label class="checkbox-row">
-          <input id="includeMedicare" type="checkbox" checked />
-          <span>Apply simplified 2% Medicare levy</span>
-        </label>
-      </form>
-
-      <div class="estimate-summary">
-        <div>
-          <span>Deductions logged</span>
-          <strong id="deductionTotal">$0.00</strong>
-        </div>
-        <div>
-          <span>Taxable income estimate</span>
-          <strong id="taxableIncome">$0.00</strong>
-        </div>
-        <div>
-          <span>Income tax after LITO</span>
-          <strong id="incomeTax">$0.00</strong>
-        </div>
-        <div>
-          <span>Estimated tax + levy</span>
-          <strong id="estimatedTax">$0.00</strong>
-        </div>
-      </div>
-
-      <div class="refund-box" id="refundBox">
-        <span id="refundLabel">Estimated outcome</span>
-        <strong id="refundAmount">$0.00</strong>
-      </div>
-
-      <p class="fine-print">
-        This is a simple estimate for planning. It does not replace myTax, an accountant, Medicare levy exemption/reduction rules, HELP repayments, offsets, spouse details, or ATO assessment logic.
-      </p>
-    </section>
-
-    <section class="section-block" id="review">
-      <div class="section-heading">
-        <h2>Review</h2>
-        <span class="muted">Evidence check</span>
-      </div>
-
-      <div class="review-grid">
-        <div>
-          <span class="material-symbols-outlined review-icon blue">receipt_long</span>
-          <strong id="receiptStatus">0</strong>
-          <small>with receipts</small>
-        </div>
-
-        <div>
-          <span class="material-symbols-outlined review-icon amber">warning</span>
-          <strong id="reviewStatus">0</strong>
-          <small>need review</small>
-        </div>
-      </div>
-    </section>
-
-    <nav class="bottom-nav" aria-label="Primary navigation">
-      <button type="button" class="nav-item active" data-scroll-target="home">
-        <span class="material-symbols-outlined">home</span>
-        <small>Home</small>
+      <button type="button" class="tab" data-tab="log">
+        <span class="material-symbols-rounded">receipt_long</span><small>Log</small>
       </button>
-
-      <button type="button" class="nav-item" data-scroll-target="log">
-        <span class="material-symbols-outlined">receipt_long</span>
-        <small>Log</small>
+      <button type="button" class="tab" data-tab="tax">
+        <span class="material-symbols-rounded">calculate</span><small>Tax</small>
       </button>
-
-      <button type="button" class="nav-item" data-scroll-target="tax">
-        <span class="material-symbols-outlined">calculate</span>
-        <small>Tax</small>
+      <button type="button" class="tab" data-tab="profile">
+        <span class="material-symbols-rounded">person</span><small>Profile</small>
       </button>
     </nav>
+
+    <button class="floating-add" type="button" data-open-expense aria-label="Add expense">
+      <span class="material-symbols-rounded">add</span>
+    </button>
   </main>
 
-  <div class="modal hidden" id="expenseModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <form class="modal-card" id="expenseForm">
-      <div class="modal-header">
+  <div class="sheet-backdrop" id="expenseSheet" hidden>
+    <form class="bottom-sheet" id="expenseForm">
+      <div class="grabber" aria-hidden="true"></div>
+      <div class="sheet-header">
         <div>
-          <p class="eyebrow">New claim</p>
-          <h2 id="modalTitle">Add expense</h2>
+          <p class="caption">New evidence item</p>
+          <h2>Add expense</h2>
         </div>
-
-        <button class="round-button" type="button" id="closeExpenseModal" aria-label="Close">
-          <span class="material-symbols-outlined">close</span>
+        <button class="icon-button soft" type="button" data-close-expense aria-label="Close">
+          <span class="material-symbols-rounded">close</span>
         </button>
       </div>
 
-      <label>
-        <span>Profile</span>
-        <select name="profileId" id="expenseProfile" required></select>
-      </label>
+      <div class="form-grid">
+        <label class="field">
+          <span>Profile</span>
+          <select id="expenseProfile" name="profileId" required></select>
+        </label>
+        <label class="field">
+          <span>Date</span>
+          <input id="expenseDate" name="date" type="date" required />
+        </label>
+        <label class="field full">
+          <span>Supplier / item</span>
+          <input name="merchant" type="text" placeholder="Ausmed, Officeworks, Amazon..." required />
+        </label>
+        <label class="field full">
+          <span>Category</span>
+          <select name="category" required>
+            <option value="Education">Education / CPD</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Subscription">Subscription / software</option>
+            <option value="Registration">Registration / membership</option>
+            <option value="Travel">Work travel</option>
+            <option value="Uniform">Uniform / protective clothing</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Amount</span>
+          <input name="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="200.00" required />
+        </label>
+        <label class="field">
+          <span>Work use %</span>
+          <input name="workUse" type="number" inputmode="decimal" min="0" max="100" step="1" value="100" required />
+        </label>
+        <label class="field full">
+          <span>Receipt file</span>
+          <input name="receipt" type="file" accept="image/*,.pdf" />
+        </label>
+        <label class="field full">
+          <span>Evidence note</span>
+          <textarea name="notes" rows="3" placeholder="Why it relates to work, how private use was apportioned, receipt notes..."></textarea>
+        </label>
+      </div>
 
-      <label>
-        <span>Date</span>
-        <input name="date" id="expenseDate" type="date" required />
-      </label>
+      <button class="primary-button" type="submit">
+        <span class="material-symbols-rounded">check_circle</span>
+        Save claim
+      </button>
+    </form>
+  </div>
 
-      <label>
-        <span>Supplier / item</span>
-        <input name="merchant" type="text" placeholder="Ausmed, Amazon, Officeworks..." required />
+  <div class="sheet-backdrop" id="profileSheet" hidden>
+    <form class="bottom-sheet compact-sheet" id="profileForm">
+      <div class="grabber" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <p class="caption">New taxpayer</p>
+          <h2>Add profile</h2>
+        </div>
+        <button class="icon-button soft" type="button" data-close-profile aria-label="Close">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <label class="field full">
+        <span>Name</span>
+        <input name="name" type="text" placeholder="Name" required />
       </label>
-
-      <label>
-        <span>Category</span>
-        <select name="category" required>
-          <option value="education">Education / CPD</option>
-          <option value="equipment">Equipment</option>
-          <option value="subscription">Subscription / software</option>
-          <option value="registration">Registration / membership</option>
-          <option value="travel">Work travel</option>
-          <option value="clothing">Uniform / protective clothing</option>
-          <option value="other">Other</option>
+      <label class="field full">
+        <span>Occupation preset</span>
+        <select name="preset">
+          <option value="General employee">General employee</option>
+          <option value="Nurse / aged care">Nurse / aged care</option>
+          <option value="Office / admin">Office / admin</option>
+          <option value="Retail / hospitality">Retail / hospitality</option>
+          <option value="Student">Student</option>
+          <option value="Sole trader">Sole trader</option>
         </select>
       </label>
-
-      <div class="two-col">
-        <label>
-          <span>Amount</span>
-          <input name="amount" inputmode="decimal" type="number" min="0" step="0.01" placeholder="200.00" required />
-        </label>
-
-        <label>
-          <span>Work use %</span>
-          <input name="workUse" inputmode="decimal" type="number" min="0" max="100" step="1" value="100" required />
-        </label>
-      </div>
-
-      <label>
-        <span>Receipt</span>
-        <input name="receipt" id="receiptInput" type="file" accept="image/*,.pdf" />
-      </label>
-
-      <label>
-        <span>Notes</span>
-        <textarea name="notes" rows="3" placeholder="Evidence, work-use reason, apportionment note..."></textarea>
-      </label>
-
-      <button class="primary-button" type="submit">Save expense</button>
+      <button class="primary-button" type="submit">
+        <span class="material-symbols-rounded">person</span>
+        Create profile
+      </button>
     </form>
   </div>
 
-  <div class="modal hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <form class="modal-card" id="settingsForm">
-      <div class="modal-header">
-        <div>
-          <p class="eyebrow">Lodgr settings</p>
-          <h2 id="settingsTitle">Selected profile</h2>
-        </div>
-
-        <button class="round-button" type="button" id="closeSettings" aria-label="Close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <label>
-        <span>Profile name</span>
-        <input id="profileNameInput" type="text" maxlength="40" required />
-      </label>
-
-      <button class="primary-button" type="submit">Save profile</button>
-      <button class="danger-button" type="button" id="deleteProfile">Delete selected profile</button>
-    </form>
-  </div>
-
-  <div class="toast hidden" id="toast" role="status"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>
