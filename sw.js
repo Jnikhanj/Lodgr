@@ -1,10 +1,10 @@
-const CACHE_NAME = "lodgr-v2.1.0";
+const CACHE_NAME = "lodgr-v2.2.0";
 const APP_SHELL = [
   "./",
-  "./index.html",
-  "./styles.css?v=2.1.0",
-  "./app.js?v=2.1.0",
-  "./manifest.webmanifest?v=2.1.0",
+  "./index.html?v=2.2.0",
+  "./styles.css?v=2.2.0",
+  "./app.js?v=2.2.0",
+  "./manifest.webmanifest?v=2.2.0",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/apple-touch-icon.png"

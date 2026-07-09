@@ -1,3 +1,15 @@
+# Lodgr v2.2 hotfix
+
+This build fixes the bottom-sheet/modal issue on iOS Safari/PWA where the Add Profile sheet could appear stuck on screen.
+
+Changes:
+- Adds `.sheet-backdrop[hidden] { display: none !important; }` so hidden sheets are genuinely hidden.
+- Cache-busts files with `v=2.2.0`.
+- Updates service worker cache to `lodgr-v2.2.0`.
+- Prevents raw Google Material Symbol ligature text such as `close` and `person` from showing while icon fonts load.
+
+Upload the files at the repository root, not inside another folder.
+
 # Lodgr
 
 A polished Safari/PWA prototype for logging Australian tax deduction expenses, attaching receipt evidence markers, switching between taxpayer profiles, and estimating refund/payable outcomes.
@@ -26,7 +38,7 @@ This is a prototype estimator only. It uses 2025–26 Australian resident tax ra
 
 ## v2.1 cache-fix upload note
 
-This build uses cache-busted `styles.css?v=2.1.0` and `app.js?v=2.1.0` references and a network-first service worker. It is intended to replace the older cache-first PWA build.
+This build uses cache-busted `styles.css?v=2.2.0` and `app.js?v=2.2.0` references and a network-first service worker. It is intended to replace the older cache-first PWA build.
 
 Upload the contents of this folder directly into the root of the GitHub Pages repository. Do not upload the folder as a subfolder unless GitHub Pages is configured to serve from that subfolder.
 

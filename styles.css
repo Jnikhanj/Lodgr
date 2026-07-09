@@ -895,6 +895,16 @@ h2 {
 .floating-add .material-symbols-rounded { font-size: 28px; font-variation-settings: "FILL" 0, "wght" 700, "GRAD" 0, "opsz" 28; }
 .app-shell.show-fab .floating-add { display: grid; }
 
+
+/* Critical: hidden modals must stay hidden even when .sheet-backdrop sets display:grid. */
+.sheet-backdrop[hidden] {
+  display: none !important;
+}
+
+/* Prevent raw Material Symbol ligature words like "close"/"person" flashing if Google Fonts is delayed. */
+html.icons-loading .material-symbols-rounded {
+  visibility: hidden;
+}
 .sheet-backdrop {
   position: fixed;
   inset: 0;

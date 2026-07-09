@@ -1,5 +1,31 @@
 const STORAGE_KEY = "lodgr.v2.state";
 
+initIconFont();
+
+function initIconFont() {
+  const root = document.documentElement;
+
+  if (!("fonts" in document)) {
+    root.classList.remove("icons-loading");
+    return;
+  }
+
+  document.fonts
+    .load('24px "Material Symbols Rounded"')
+    .then(() => {
+      root.classList.remove("icons-loading");
+    })
+    .catch(() => {
+      // Keep icons hidden rather than showing raw ligature text such as close/person.
+    });
+
+  window.setTimeout(() => {
+    if (document.fonts.check('24px "Material Symbols Rounded"')) {
+      root.classList.remove("icons-loading");
+    }
+  }, 1800);
+}
+
 const categories = ["All", "Education", "Equipment", "Subscription", "Registration", "Travel", "Uniform", "Other"];
 
 const categoryStyle = {
@@ -628,7 +654,7 @@ function registerServiceWorker() {
 
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("./sw.js?v=2.1.0", { updateViaCache: "none" })
+      .register("./sw.js?v=2.2.0", { updateViaCache: "none" })
       .then((registration) => {
         registration.update().catch(() => {});
 
