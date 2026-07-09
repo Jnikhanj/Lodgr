@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Lodgr" />
+
+  <title>Lodgr</title>
+  <meta name="description" content="Lodgr - tax deduction tracker and refund estimator." />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,-25..0&icon_names=add,attach_file,calculate,calendar_month,category,check_circle,close,delete,download,home,person,receipt_long,request_quote,school,settings,summarize,upload_file,visibility,warning,work&display=block"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <main class="app-shell" id="home">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Tax year 2025–26</p>
+        <h1>Lodgr</h1>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="round-button" type="button" aria-label="Tax estimate" data-scroll-target="tax">
+          <span class="material-symbols-outlined">calculate</span>
+        </button>
+        <button class="round-button" type="button" aria-label="Settings" id="openSettings">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-summary" aria-label="Current profile summary">
+      <div>
+        <span id="activeProfileLabel">Selected profile</span>
+        <strong id="activeProfileName">You</strong>
+      </div>
+      <div>
+        <span>Claimable</span>
+        <strong id="activeProfileTotal">$0.00</strong>
+      </div>
+    </section>
+
+    <section class="action-grid" aria-label="Quick actions">
+      <button class="action-tile" type="button" id="openExpenseModal">
+        <span class="icon-pill icon-green">
+          <span class="material-symbols-outlined">add</span>
+        </span>
+        <span>Add Expense</span>
+      </button>
+
+      <button class="action-tile" type="button" id="scanReceipt">
+        <span class="icon-pill icon-blue">
+          <span class="material-symbols-outlined">receipt_long</span>
+        </span>
+        <span>Receipt Vault</span>
+      </button>
+
+      <button class="action-tile" type="button" data-scroll-target="tax">
+        <span class="icon-pill icon-purple">
+          <span class="material-symbols-outlined">request_quote</span>
+        </span>
+        <span>Estimate Tax</span>
+      </button>
+    </section>
+
+    <section class="section-block">
+      <div class="section-heading">
+        <h2>Profiles</h2>
+        <button class="text-button" type="button" id="addProfile">+ Add</button>
+      </div>
+      <div class="profile-strip" id="profileStrip"></div>
+    </section>
+
+    <section class="section-block" id="log">
+      <div class="section-heading">
+        <h2>Recent Expenses</h2>
+        <span class="muted" id="expenseCount">0 items</span>
+      </div>
+
+      <div class="toolbar-row">
+        <div class="search-wrap">
+          <span class="material-symbols-outlined">category</span>
+          <select id="categoryFilter" aria-label="Filter expenses by category">
+            <option value="all">All categories</option>
+            <option value="education">Education / CPD</option>
+            <option value="equipment">Equipment</option>
+            <option value="subscription">Subscription / software</option>
+            <option value="registration">Registration / membership</option>
+            <option value="travel">Work travel</option>
+            <option value="clothing">Uniform / protective clothing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="expense-list" id="expenseList"></div>
+
+      <button class="view-row" type="button" id="exportCsv">
+        <span class="material-symbols-outlined">download</span>
+        <span>Export CSV</span>
+        <span class="view-arrow">→</span>
+      </button>
+    </section>
+
+    <section class="section-block estimate-card" id="tax">
+      <div class="section-heading">
+        <h2>Tax Estimate</h2>
+        <span class="badge badge-neutral">Prototype</span>
+      </div>
+
+      <form class="tax-form" id="taxForm">
+        <label>
+          <span>Gross income</span>
+          <input id="grossIncome" inputmode="decimal" type="number" min="0" step="0.01" placeholder="85000" />
+        </label>
+
+        <label>
+          <span>PAYG withheld</span>
+          <input id="taxWithheld" inputmode="decimal" type="number" min="0" step="0.01" placeholder="18500" />
+        </label>
+
+        <label>
+          <span>Other income</span>
+          <input id="otherIncome" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0" />
+        </label>
+
+        <label class="checkbox-row">
+          <input id="includeMedicare" type="checkbox" checked />
+          <span>Apply simplified 2% Medicare levy</span>
+        </label>
+      </form>
+
+      <div class="estimate-summary">
+        <div>
+          <span>Deductions logged</span>
+          <strong id="deductionTotal">$0.00</strong>
+        </div>
+        <div>
+          <span>Taxable income estimate</span>
+          <strong id="taxableIncome">$0.00</strong>
+        </div>
+        <div>
+          <span>Income tax after LITO</span>
+          <strong id="incomeTax">$0.00</strong>
+        </div>
+        <div>
+          <span>Estimated tax + levy</span>
+          <strong id="estimatedTax">$0.00</strong>
+        </div>
+      </div>
+
+      <div class="refund-box" id="refundBox">
+        <span id="refundLabel">Estimated outcome</span>
+        <strong id="refundAmount">$0.00</strong>
+      </div>
+
+      <p class="fine-print">
+        This is a simple estimate for planning. It does not replace myTax, an accountant, Medicare levy exemption/reduction rules, HELP repayments, offsets, spouse details, or ATO assessment logic.
+      </p>
+    </section>
+
+    <section class="section-block" id="review">
+      <div class="section-heading">
+        <h2>Review</h2>
+        <span class="muted">Evidence check</span>
+      </div>
+
+      <div class="review-grid">
+        <div>
+          <span class="material-symbols-outlined review-icon blue">receipt_long</span>
+          <strong id="receiptStatus">0</strong>
+          <small>with receipts</small>
+        </div>
+
+        <div>
+          <span class="material-symbols-outlined review-icon amber">warning</span>
+          <strong id="reviewStatus">0</strong>
+          <small>need review</small>
+        </div>
+      </div>
+    </section>
+
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button type="button" class="nav-item active" data-scroll-target="home">
+        <span class="material-symbols-outlined">home</span>
+        <small>Home</small>
+      </button>
+
+      <button type="button" class="nav-item" data-scroll-target="log">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <small>Log</small>
+      </button>
+
+      <button type="button" class="nav-item" data-scroll-target="tax">
+        <span class="material-symbols-outlined">calculate</span>
+        <small>Tax</small>
+      </button>
+    </nav>
+  </main>
+
+  <div class="modal hidden" id="expenseModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <form class="modal-card" id="expenseForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">New claim</p>
+          <h2 id="modalTitle">Add expense</h2>
+        </div>
+
+        <button class="round-button" type="button" id="closeExpenseModal" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <label>
+        <span>Profile</span>
+        <select name="profileId" id="expenseProfile" required></select>
+      </label>
+
+      <label>
+        <span>Date</span>
+        <input name="date" id="expenseDate" type="date" required />
+      </label>
+
+      <label>
+        <span>Supplier / item</span>
+        <input name="merchant" type="text" placeholder="Ausmed, Amazon, Officeworks..." required />
+      </label>
+
+      <label>
+        <span>Category</span>
+        <select name="category" required>
+          <option value="education">Education / CPD</option>
+          <option value="equipment">Equipment</option>
+          <option value="subscription">Subscription / software</option>
+          <option value="registration">Registration / membership</option>
+          <option value="travel">Work travel</option>
+          <option value="clothing">Uniform / protective clothing</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+
+      <div class="two-col">
+        <label>
+          <span>Amount</span>
+          <input name="amount" inputmode="decimal" type="number" min="0" step="0.01" placeholder="200.00" required />
+        </label>
+
+        <label>
+          <span>Work use %</span>
+          <input name="workUse" inputmode="decimal" type="number" min="0" max="100" step="1" value="100" required />
+        </label>
+      </div>
+
+      <label>
+        <span>Receipt</span>
+        <input name="receipt" id="receiptInput" type="file" accept="image/*,.pdf" />
+      </label>
+
+      <label>
+        <span>Notes</span>
+        <textarea name="notes" rows="3" placeholder="Evidence, work-use reason, apportionment note..."></textarea>
+      </label>
+
+      <button class="primary-button" type="submit">Save expense</button>
+    </form>
+  </div>
+
+  <div class="modal hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <form class="modal-card" id="settingsForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Lodgr settings</p>
+          <h2 id="settingsTitle">Selected profile</h2>
+        </div>
+
+        <button class="round-button" type="button" id="closeSettings" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <label>
+        <span>Profile name</span>
+        <input id="profileNameInput" type="text" maxlength="40" required />
+      </label>
+
+      <button class="primary-button" type="submit">Save profile</button>
+      <button class="danger-button" type="button" id="deleteProfile">Delete selected profile</button>
+    </form>
+  </div>
+
+  <div class="toast hidden" id="toast" role="status"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
