@@ -43,3 +43,8 @@ This build uses cache-busted `styles.css?v=2.2.0` and `app.js?v=2.2.0` reference
 Upload the contents of this folder directly into the root of the GitHub Pages repository. Do not upload the folder as a subfolder unless GitHub Pages is configured to serve from that subfolder.
 
 If an old version still appears on iPhone, remove the old Home Screen app shortcut, clear Safari website data for `jnikhanj.github.io`, open the site again in Safari, and add it to Home Screen again.
+
+
+## v2.3
+
+Fixes iOS Safari Material Symbols ligatures rendering as text by explicitly enabling `font-feature-settings: 'liga'` and cache-busting CSS/JS/service worker files.
