@@ -1,63 +1,42 @@
-const CACHE_NAME = "lodgr-v2.4.0";
-const APP_SHELL = [
+const CACHE_NAME = "lodgr-v3.0.0";
+const CORE_ASSETS = [
   "./",
-  "./index.html?v=2.4.0",
-  "./styles.css?v=2.4.0",
-  "./app.js?v=2.4.0",
-  "./manifest.webmanifest?v=2.4.0",
+  "./index.html?v=3.0.0",
+  "./styles.css?v=3.0.0",
+  "./app.js?v=3.0.0",
+  "./manifest.webmanifest?v=3.0.0",
+  "./assets/icons/apple-touch-icon.png",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  "./assets/icons/apple-touch-icon.png"
+  "./assets/icons/icon-maskable-192.png",
+  "./assets/icons/icon-maskable-512.png",
+  "./assets/icons/favicon-32.png"
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", event => {
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS).catch(() => null)));
+});
+
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.keys().then(keys => Promise.all(keys.map(key => key === CACHE_NAME ? null : caches.delete(key)))).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
-
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
+self.addEventListener("fetch", event => {
   const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
-  if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request, "./index.html"));
-    return;
-  }
-
-  event.respondWith(networkFirst(request));
+  event.respondWith(
+    fetch(request)
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        return response;
+      })
+      .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html?v=3.0.0")))
+  );
 });
-
-async function networkFirst(request, fallbackUrl) {
-  const cache = await caches.open(CACHE_NAME);
-
-  try {
-    const response = await fetch(request, { cache: "no-store" });
-    if (response && response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    if (fallbackUrl) return caches.match(fallbackUrl);
-    throw error;
-  }
-}

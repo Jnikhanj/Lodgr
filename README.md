@@ -1,12 +1,24 @@
-# Lodgr v2.4 icon-proof build
+# Lodgr v3.0
 
-This build removes the dependency on Material Symbols icon fonts and uses embedded SVG icons instead.
+Lodgr is a Safari/PWA tax deduction tracker and refund estimator.
 
-Why: iOS Safari/PWA was rendering icon ligature names such as `home`, `receipt_long`, `calculate`, and `person` as visible text. Embedded SVG icons avoid that failure mode completely.
+## What is new in v3
 
-## Upload
+- Tap any claim to edit it.
+- Delete and duplicate claims.
+- Rename, edit, add and delete profiles.
+- Custom categories with icon, colour, default work-use percentage, receipt requirement and risk level.
+- Working settings sheet.
+- Appearance settings: theme, accent colour, tax year label, start screen and currency decimals.
+- Dashboard settings: show/hide outcome, profiles, category summary and recent claims.
+- Backup and restore with JSON.
+- Export claims as CSV.
+- Remove sample/demo claims.
+- SVG icons are embedded locally, so the icon font issue on iOS Safari/PWA is avoided.
 
-Upload the contents of this ZIP directly into your GitHub Pages repository root:
+## Upload to GitHub Pages
+
+Upload the contents of this folder to the root of your GitHub repository:
 
 ```text
 index.html
@@ -18,22 +30,17 @@ README.md
 assets/
 ```
 
-Do not upload the containing folder.
+Do not upload the folder itself as a subfolder.
 
-## After upload
+## iPhone refresh steps after upload
 
-On iPhone:
+1. Delete the old Lodgr Home Screen icon.
+2. Open Settings → Safari → Advanced → Website Data.
+3. Delete data for `jnikhanj.github.io`.
+4. Open the GitHub Pages link in Safari.
+5. Refresh once.
+6. Add to Home Screen again.
 
-1. Delete the existing Lodgr Home Screen icon.
-2. Settings → Safari → Advanced → Website Data → delete `jnikhanj.github.io`.
-3. Open `https://jnikhanj.github.io/Lodgr/` in Safari.
-4. Refresh once.
-5. Add to Home Screen again.
+## Note
 
-## Notes
-
-- Version: `2.4.0`
-- Icons: local inline SVG, no external icon-font dependency.
-- Text font: Inter with Apple/system fallback.
-- Storage: localStorage demo persistence.
-- Tax estimator: prototype only; not tax advice.
+The tax estimate is a prototype for personal planning only. It includes 2025–26 resident tax-rate logic, LITO estimate and a simplified Medicare levy option. Confirm all tax settings and deductions before lodging.

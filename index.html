@@ -3,47 +3,44 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f8f5ef" />
+  <meta name="theme-color" content="#f7f3ea" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Lodgr" />
 
   <title>Lodgr</title>
-  <meta name="description" content="Lodgr — polished tax deduction tracking and refund estimation for Australian taxpayers." />
+  <meta name="description" content="Lodgr — configurable tax deduction tracking and refund estimation for Australian taxpayers." />
 
-  <link rel="manifest" href="manifest.webmanifest?v=2.4.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=3.0.0" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=2.4.0" />
+  <link rel="stylesheet" href="styles.css?v=3.0.0" />
 </head>
 <body>
-  <main class="app-shell" aria-label="Lodgr app">
+  <main class="app-shell" id="appShell" aria-label="Lodgr app">
     <div class="status-spacer" aria-hidden="true"></div>
 
-    <section class="screen is-active" id="screen-home" data-screen="home" aria-labelledby="home-title">
+    <section class="screen is-active" id="screen-home" data-screen="home" aria-labelledby="homeTitle">
       <header class="app-header header-floating">
         <div>
-          <p class="caption">2025–26 tax year</p>
-          <h1 id="home-title">Lodgr</h1>
+          <p class="caption" id="homeTaxYear">2025–26 tax year</p>
+          <h1 id="homeTitle">Lodgr</h1>
         </div>
         <button class="icon-button soft" type="button" data-open-settings aria-label="Settings">
-          <span class="material-symbols-rounded">settings</span>
+          <span class="svg-icon" data-icon="settings"></span>
         </button>
       </header>
 
-      <div class="hero-card">
+      <section class="hero-card" aria-live="polite">
         <div class="hero-glow" aria-hidden="true"></div>
         <div class="hero-topline">
-          <span class="mini-chip dark"><span class="pulse-dot"></span><span id="activeProfileLabel">Personal profile</span></span>
-          <span class="mini-chip muted-chip">Estimate</span>
+          <button class="mini-chip dark" type="button" data-jump="profile"><span class="pulse-dot"></span><span id="activeProfileLabel">Profile</span></button>
+          <span class="mini-chip muted-chip" id="heroEstimateType">Estimate</span>
         </div>
         <p class="hero-label">Expected outcome</p>
         <div class="hero-amount" id="homeOutcome">$0</div>
@@ -62,38 +59,49 @@
             <strong id="homeReviewCount">0</strong>
           </div>
         </div>
-      </div>
+      </section>
 
       <div class="quick-grid" aria-label="Quick actions">
-        <button class="quick-action" type="button" data-open-expense>
-          <span class="icon-orb green"><span class="material-symbols-rounded">add</span></span>
+        <button class="quick-action" type="button" data-new-claim>
+          <span class="icon-orb green"><span class="svg-icon" data-icon="plus"></span></span>
           <strong>Add</strong>
-          <small>Expense</small>
+          <small>Claim</small>
         </button>
-        <button class="quick-action" type="button" data-open-expense data-receipt-first>
-          <span class="icon-orb blue"><span class="material-symbols-rounded">receipt_long</span></span>
-          <strong>Receipt</strong>
-          <small>Vault</small>
+        <button class="quick-action" type="button" data-jump="log">
+          <span class="icon-orb blue"><span class="svg-icon" data-icon="receipt"></span></span>
+          <strong>Review</strong>
+          <small>Claims</small>
         </button>
         <button class="quick-action" type="button" data-jump="tax">
-          <span class="icon-orb purple"><span class="material-symbols-rounded">calculate</span></span>
+          <span class="icon-orb purple"><span class="svg-icon" data-icon="calculator"></span></span>
           <strong>Refund</strong>
           <small>Estimate</small>
         </button>
       </div>
 
-      <section class="content-card no-pad">
+      <section class="content-card no-pad" id="homeProfileCard">
         <div class="section-title padded">
           <div>
             <p class="caption">Fast switch</p>
             <h2>Profiles</h2>
           </div>
-          <button class="small-link" type="button" data-add-profile>New</button>
+          <button class="small-link" type="button" data-new-profile>New</button>
         </div>
         <div class="profile-carousel" id="profileCarousel" aria-label="Profiles"></div>
       </section>
 
-      <section class="content-card no-pad">
+      <section class="content-card no-pad" id="homeCategoryCard">
+        <div class="section-title padded">
+          <div>
+            <p class="caption">Snapshot</p>
+            <h2>Top categories</h2>
+          </div>
+          <button class="small-link" type="button" data-open-settings data-settings-target="categories">Edit</button>
+        </div>
+        <div class="category-bars" id="categoryBars"></div>
+      </section>
+
+      <section class="content-card no-pad" id="homeRecentCard">
         <div class="section-title padded">
           <div>
             <p class="caption">Latest</p>
@@ -105,20 +113,31 @@
       </section>
     </section>
 
-    <section class="screen" id="screen-log" data-screen="log" aria-labelledby="log-title">
+    <section class="screen" id="screen-log" data-screen="log" aria-labelledby="logTitle">
       <header class="app-header">
         <div>
           <p class="caption">Claim log</p>
-          <h1 id="log-title">Expenses</h1>
+          <h1 id="logTitle">Expenses</h1>
         </div>
-        <button class="icon-button accent" type="button" data-open-expense aria-label="Add expense">
-          <span class="material-symbols-rounded">add</span>
+        <button class="icon-button accent" type="button" data-new-claim aria-label="Add claim">
+          <span class="svg-icon" data-icon="plus"></span>
         </button>
       </header>
 
       <div class="search-box">
-        <span class="material-symbols-rounded">search</span>
+        <span class="svg-icon" data-icon="search"></span>
         <input id="searchInput" type="search" placeholder="Search merchant, category, note..." />
+      </div>
+
+      <div class="filter-row">
+        <select id="profileFilter" aria-label="Profile filter"></select>
+        <select id="statusFilter" aria-label="Evidence filter">
+          <option value="all">All status</option>
+          <option value="strong">Strong</option>
+          <option value="review">Review</option>
+          <option value="risky">Risky</option>
+          <option value="excluded">Excluded</option>
+        </select>
       </div>
 
       <div class="chip-row" id="categoryChips" aria-label="Category filters"></div>
@@ -126,7 +145,7 @@
       <section class="content-card no-pad fill-card">
         <div class="section-title padded sticky-card-title">
           <div>
-            <p class="caption">Evidence-first</p>
+            <p class="caption">Tap a claim to edit</p>
             <h2>All logged claims</h2>
           </div>
           <span class="soft-count" id="logCount">0</span>
@@ -135,16 +154,18 @@
       </section>
     </section>
 
-    <section class="screen" id="screen-tax" data-screen="tax" aria-labelledby="tax-title">
+    <section class="screen" id="screen-tax" data-screen="tax" aria-labelledby="taxTitle">
       <header class="app-header">
         <div>
           <p class="caption">Australian resident estimate</p>
-          <h1 id="tax-title">Tax</h1>
+          <h1 id="taxTitle">Tax</h1>
         </div>
         <button class="icon-button soft" type="button" data-export-csv aria-label="Export CSV">
-          <span class="material-symbols-rounded">download</span>
+          <span class="svg-icon" data-icon="download"></span>
         </button>
       </header>
+
+      <div class="profile-tax-switch" id="taxProfileSwitch"></div>
 
       <section class="tax-result-card" aria-live="polite">
         <p class="caption light">Estimated result</p>
@@ -161,7 +182,7 @@
             <p class="caption">Inputs</p>
             <h2>Income details</h2>
           </div>
-          <span class="soft-count">2025–26</span>
+          <span class="soft-count" id="taxYearChip">2025–26</span>
         </div>
         <form class="form-grid" id="taxForm" autocomplete="off">
           <label class="field">
@@ -177,10 +198,17 @@
             <input id="otherIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
           </label>
           <label class="toggle-row">
-            <input id="includeMedicare" type="checkbox" checked />
+            <input id="includeMedicare" type="checkbox" />
             <span>
               <strong>Include basic Medicare levy</strong>
-              <small>Uses a simplified 2% estimate; review exemption/reduction separately.</small>
+              <small>Uses simplified 2% estimate; check reduction/exemption separately.</small>
+            </span>
+          </label>
+          <label class="toggle-row">
+            <input id="hasHelpDebt" type="checkbox" />
+            <span>
+              <strong>HELP/HECS debt flag</strong>
+              <small>Flag only in this version. Repayment calculation can be added next.</small>
             </span>
           </label>
         </form>
@@ -204,17 +232,17 @@
         </div>
       </section>
 
-      <p class="disclaimer">This is an estimate only and is not tax advice. Confirm deductions, offsets, Medicare levy, residency and HELP/loan obligations before lodging.</p>
+      <p class="disclaimer">Estimate only. Confirm work-related deductions, private-use apportionment, Medicare levy, residency, HELP/loan obligations and offsets before lodging.</p>
     </section>
 
-    <section class="screen" id="screen-profile" data-screen="profile" aria-labelledby="profile-title">
+    <section class="screen" id="screen-profile" data-screen="profile" aria-labelledby="profileTitle">
       <header class="app-header">
         <div>
-          <p class="caption">Household setup</p>
-          <h1 id="profile-title">Profile</h1>
+          <p class="caption">Personalise Lodgr</p>
+          <h1 id="profileTitle">Profile</h1>
         </div>
-        <button class="icon-button accent" type="button" data-add-profile aria-label="Add profile">
-          <span class="material-symbols-rounded">add</span>
+        <button class="icon-button accent" type="button" data-new-profile aria-label="Add profile">
+          <span class="svg-icon" data-icon="plus"></span>
         </button>
       </header>
 
@@ -222,155 +250,277 @@
         <div class="section-title padded">
           <div>
             <p class="caption">Taxpayers</p>
-            <h2>Profiles</h2>
+            <h2>Your profiles</h2>
           </div>
           <span class="soft-count" id="profileCount">0</span>
         </div>
         <div class="profile-list" id="profileList"></div>
       </section>
 
-      <section class="content-card">
-        <div class="section-title">
-          <div>
-            <p class="caption">Data</p>
-            <h2>Export & storage</h2>
-          </div>
-          <span class="icon-orb mini amber"><span class="material-symbols-rounded">lock</span></span>
-        </div>
-        <div class="settings-list">
-          <button type="button" data-export-csv><span><strong>Export expense CSV</strong><small>Download claims for accountant or myTax prep.</small></span><span class="material-symbols-rounded">arrow_forward</span></button>
-          <button type="button" id="resetDemo"><span><strong>Reset demo data</strong><small>Clear local sample data and start again.</small></span><span class="material-symbols-rounded">arrow_forward</span></button>
-        </div>
+      <section class="settings-grid">
+        <button class="settings-tile" type="button" data-open-settings data-settings-target="appearance">
+          <span class="icon-orb blue"><span class="svg-icon" data-icon="palette"></span></span>
+          <strong>Appearance</strong>
+          <small>Theme, accent, decimals</small>
+        </button>
+        <button class="settings-tile" type="button" data-open-settings data-settings-target="categories">
+          <span class="icon-orb green"><span class="svg-icon" data-icon="category"></span></span>
+          <strong>Categories</strong>
+          <small>Icons, risk, defaults</small>
+        </button>
+        <button class="settings-tile" type="button" data-open-settings data-settings-target="data">
+          <span class="icon-orb purple"><span class="svg-icon" data-icon="cloud"></span></span>
+          <strong>Backup</strong>
+          <small>Export or import data</small>
+        </button>
+        <button class="settings-tile" type="button" data-open-settings data-settings-target="dashboard">
+          <span class="icon-orb amber"><span class="svg-icon" data-icon="dashboard"></span></span>
+          <strong>Dashboard</strong>
+          <small>Show or hide cards</small>
+        </button>
       </section>
 
-      <section class="content-card app-credit">
-        <div class="app-mark-small">L</div>
-        <div>
-          <h2>Lodgr</h2>
-          <p>Track claims. Keep proof. Lodge smarter.</p>
+      <section class="content-card danger-zone">
+        <div class="section-title">
+          <div>
+            <p class="caption">Data control</p>
+            <h2>Reset options</h2>
+          </div>
         </div>
+        <button class="secondary-button" type="button" id="clearSampleData">Remove demo claims</button>
+        <button class="danger-button" type="button" id="resetAllData">Reset Lodgr</button>
       </section>
     </section>
 
+    <button class="floating-add" type="button" data-new-claim aria-label="Add claim">
+      <span class="svg-icon" data-icon="plus"></span>
+    </button>
+
     <nav class="tab-bar" aria-label="Primary navigation">
-      <button type="button" class="tab is-active" data-tab="home">
-        <span class="material-symbols-rounded">home</span><small>Home</small>
+      <button class="tab is-active" type="button" data-tab="home">
+        <span class="svg-icon" data-icon="home"></span>
+        <small>Home</small>
       </button>
-      <button type="button" class="tab" data-tab="log">
-        <span class="material-symbols-rounded">receipt_long</span><small>Log</small>
+      <button class="tab" type="button" data-tab="log">
+        <span class="svg-icon" data-icon="receipt"></span>
+        <small>Log</small>
       </button>
-      <button type="button" class="tab" data-tab="tax">
-        <span class="material-symbols-rounded">calculate</span><small>Tax</small>
+      <button class="tab" type="button" data-tab="tax">
+        <span class="svg-icon" data-icon="calculator"></span>
+        <small>Tax</small>
       </button>
-      <button type="button" class="tab" data-tab="profile">
-        <span class="material-symbols-rounded">person</span><small>Profile</small>
+      <button class="tab" type="button" data-tab="profile">
+        <span class="svg-icon" data-icon="person"></span>
+        <small>Profile</small>
       </button>
     </nav>
-
-    <button class="floating-add" type="button" data-open-expense aria-label="Add expense">
-      <span class="material-symbols-rounded">add</span>
-    </button>
   </main>
 
-  <div class="sheet-backdrop" id="expenseSheet" hidden>
-    <form class="bottom-sheet" id="expenseForm">
-      <div class="grabber" aria-hidden="true"></div>
+  <div class="sheet-backdrop" id="claimSheet" hidden>
+    <form class="sheet-card tall-sheet" id="claimForm">
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-header">
         <div>
-          <p class="caption">New evidence item</p>
-          <h2>Add expense</h2>
+          <p class="caption" id="claimSheetCaption">Claim record</p>
+          <h2 id="claimSheetTitle">Add claim</h2>
         </div>
-        <button class="icon-button soft" type="button" data-close-expense aria-label="Close">
-          <span class="material-symbols-rounded">close</span>
-        </button>
+        <button class="icon-button soft" type="button" data-close-claim aria-label="Close"><span class="svg-icon" data-icon="close"></span></button>
       </div>
-
+      <input type="hidden" id="claimId" />
       <div class="form-grid">
         <label class="field">
           <span>Profile</span>
-          <select id="expenseProfile" name="profileId" required></select>
+          <select id="claimProfileId" required></select>
         </label>
         <label class="field">
           <span>Date</span>
-          <input id="expenseDate" name="date" type="date" required />
+          <input id="claimDate" type="date" required />
         </label>
-        <label class="field full">
+        <label class="field">
           <span>Supplier / item</span>
-          <input name="merchant" type="text" placeholder="Ausmed, Officeworks, Amazon..." required />
+          <input id="claimMerchant" type="text" placeholder="Ausmed, Officeworks, ChatGPT..." required />
         </label>
-        <label class="field full">
+        <label class="field">
           <span>Category</span>
-          <select name="category" required>
-            <option value="Education">Education / CPD</option>
-            <option value="Equipment">Equipment</option>
-            <option value="Subscription">Subscription / software</option>
-            <option value="Registration">Registration / membership</option>
-            <option value="Travel">Work travel</option>
-            <option value="Uniform">Uniform / protective clothing</option>
-            <option value="Other">Other</option>
-          </select>
+          <select id="claimCategoryId" required></select>
+        </label>
+        <div class="two-col">
+          <label class="field">
+            <span>Amount</span>
+            <input id="claimAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="200.00" required />
+          </label>
+          <label class="field">
+            <span>Work use %</span>
+            <input id="claimWorkUse" type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="100" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>Receipt filename / note</span>
+          <input id="claimReceiptName" type="text" placeholder="invoice.pdf, photo saved, bank screenshot..." />
+        </label>
+        <label class="toggle-row">
+          <input id="claimReimbursed" type="checkbox" />
+          <span><strong>Reimbursed by employer</strong><small>Excludes this claim from deduction totals.</small></span>
         </label>
         <label class="field">
-          <span>Amount</span>
-          <input name="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="200.00" required />
-        </label>
-        <label class="field">
-          <span>Work use %</span>
-          <input name="workUse" type="number" inputmode="decimal" min="0" max="100" step="1" value="100" required />
-        </label>
-        <label class="field full">
-          <span>Receipt file</span>
-          <input name="receipt" type="file" accept="image/*,.pdf" />
-        </label>
-        <label class="field full">
-          <span>Evidence note</span>
-          <textarea name="notes" rows="3" placeholder="Why it relates to work, how private use was apportioned, receipt notes..."></textarea>
+          <span>Evidence / apportionment note</span>
+          <textarea id="claimNotes" rows="3" placeholder="Why it relates to work, private-use calculation, receipt location..."></textarea>
         </label>
       </div>
-
-      <button class="primary-button" type="submit">
-        <span class="material-symbols-rounded">check_circle</span>
-        Save claim
-      </button>
+      <div class="claim-preview" id="claimPreview"></div>
+      <div class="sheet-actions split-actions">
+        <button class="secondary-button" type="button" id="duplicateClaimButton" hidden>Duplicate</button>
+        <button class="danger-button" type="button" id="deleteClaimButton" hidden>Delete</button>
+        <button class="primary-button" type="submit">Save claim</button>
+      </div>
     </form>
   </div>
 
   <div class="sheet-backdrop" id="profileSheet" hidden>
-    <form class="bottom-sheet compact-sheet" id="profileForm">
-      <div class="grabber" aria-hidden="true"></div>
+    <form class="sheet-card tall-sheet" id="profileForm">
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-header">
         <div>
-          <p class="caption">New taxpayer</p>
-          <h2>Add profile</h2>
+          <p class="caption">Taxpayer</p>
+          <h2 id="profileSheetTitle">Add profile</h2>
         </div>
-        <button class="icon-button soft" type="button" data-close-profile aria-label="Close">
-          <span class="material-symbols-rounded">close</span>
-        </button>
+        <button class="icon-button soft" type="button" data-close-profile aria-label="Close"><span class="svg-icon" data-icon="close"></span></button>
       </div>
-      <label class="field full">
-        <span>Name</span>
-        <input name="name" type="text" placeholder="Name" required />
-      </label>
-      <label class="field full">
-        <span>Occupation preset</span>
-        <select name="preset">
-          <option value="General employee">General employee</option>
-          <option value="Nurse / aged care">Nurse / aged care</option>
-          <option value="Office / admin">Office / admin</option>
-          <option value="Retail / hospitality">Retail / hospitality</option>
-          <option value="Student">Student</option>
-          <option value="Sole trader">Sole trader</option>
-        </select>
-      </label>
-      <button class="primary-button" type="submit">
-        <span class="material-symbols-rounded">person</span>
-        Create profile
-      </button>
+      <input type="hidden" id="profileId" />
+      <div class="form-grid">
+        <label class="field">
+          <span>Name</span>
+          <input id="profileName" type="text" placeholder="Name" required />
+        </label>
+        <div class="two-col">
+          <label class="field">
+            <span>Initials</span>
+            <input id="profileInitials" type="text" maxlength="3" placeholder="JN" />
+          </label>
+          <label class="field">
+            <span>Colour</span>
+            <select id="profileColor">
+              <option value="navy">Charcoal</option>
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+              <option value="purple">Purple</option>
+              <option value="amber">Amber</option>
+              <option value="rose">Rose</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span>Occupation preset</span>
+          <select id="profilePreset">
+            <option>General employee</option>
+            <option>Healthcare employee</option>
+            <option>Office / admin</option>
+            <option>Retail / hospitality</option>
+            <option>Student</option>
+            <option>Sole trader</option>
+            <option>Mixed income</option>
+            <option>Custom</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Default work-use %</span>
+          <input id="profileDefaultWorkUse" type="number" min="0" max="100" step="1" value="100" />
+        </label>
+      </div>
+      <div class="sheet-actions split-actions">
+        <button class="danger-button" type="button" id="deleteProfileButton" hidden>Delete</button>
+        <button class="primary-button" type="submit">Save profile</button>
+      </div>
     </form>
+  </div>
+
+  <div class="sheet-backdrop" id="categorySheet" hidden>
+    <form class="sheet-card tall-sheet" id="categoryForm">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <p class="caption">Claim category</p>
+          <h2 id="categorySheetTitle">Add category</h2>
+        </div>
+        <button class="icon-button soft" type="button" data-close-category aria-label="Close"><span class="svg-icon" data-icon="close"></span></button>
+      </div>
+      <input type="hidden" id="categoryId" />
+      <div class="form-grid">
+        <label class="field"><span>Name</span><input id="categoryName" type="text" required /></label>
+        <div class="two-col">
+          <label class="field"><span>Icon</span><select id="categoryIcon"></select></label>
+          <label class="field"><span>Colour</span><select id="categoryColor"></select></label>
+        </div>
+        <div class="two-col">
+          <label class="field"><span>Default work-use %</span><input id="categoryDefaultWorkUse" type="number" min="0" max="100" step="1" value="100" /></label>
+          <label class="field"><span>Default risk</span><select id="categoryRisk"><option>Strong</option><option>Review</option><option>Risky</option></select></label>
+        </div>
+        <label class="toggle-row"><input id="categoryReceiptRequired" type="checkbox" checked /><span><strong>Receipt/evidence required</strong><small>Claims without evidence will be marked for review.</small></span></label>
+        <label class="toggle-row"><input id="categoryHidden" type="checkbox" /><span><strong>Hide this category</strong><small>Hidden categories stay on existing claims but do not appear in new claim dropdowns.</small></span></label>
+      </div>
+      <div class="sheet-actions split-actions">
+        <button class="danger-button" type="button" id="deleteCategoryButton" hidden>Delete</button>
+        <button class="primary-button" type="submit">Save category</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="sheet-backdrop" id="settingsSheet" hidden>
+    <section class="sheet-card tall-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <p class="caption">Customise</p>
+          <h2 id="settingsTitle">Settings</h2>
+        </div>
+        <button class="icon-button soft" type="button" data-close-settings aria-label="Close"><span class="svg-icon" data-icon="close"></span></button>
+      </div>
+
+      <div class="settings-tabs" id="settingsTabs">
+        <button type="button" data-settings-tab="appearance" class="is-active">Appearance</button>
+        <button type="button" data-settings-tab="categories">Categories</button>
+        <button type="button" data-settings-tab="dashboard">Dashboard</button>
+        <button type="button" data-settings-tab="data">Data</button>
+      </div>
+
+      <section class="settings-panel is-active" data-settings-panel="appearance">
+        <label class="field"><span>Theme</span><select id="settingTheme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <label class="field"><span>Accent colour</span><select id="settingAccent"><option value="green">Emerald</option><option value="blue">Blue</option><option value="purple">Purple</option><option value="amber">Amber</option><option value="rose">Rose</option></select></label>
+        <label class="field"><span>Tax year label</span><input id="settingTaxYear" type="text" placeholder="2025–26" /></label>
+        <label class="field"><span>Default start screen</span><select id="settingStartScreen"><option value="home">Home</option><option value="log">Log</option><option value="tax">Tax</option><option value="profile">Profile</option></select></label>
+        <label class="toggle-row"><input id="settingCurrencyDecimals" type="checkbox" /><span><strong>Show cents in currency</strong><small>Turn off for cleaner dashboard totals.</small></span></label>
+        <button class="primary-button" type="button" id="saveAppearanceSettings">Save appearance</button>
+      </section>
+
+      <section class="settings-panel" data-settings-panel="categories">
+        <div class="section-title compact-title"><div><p class="caption">Editable list</p><h2>Categories</h2></div><button class="small-link" type="button" id="newCategoryButton">New</button></div>
+        <div class="category-admin-list" id="categoryAdminList"></div>
+      </section>
+
+      <section class="settings-panel" data-settings-panel="dashboard">
+        <label class="toggle-row"><input id="settingShowOutcome" type="checkbox" /><span><strong>Show outcome card</strong><small>Hide tax estimate from the Home screen.</small></span></label>
+        <label class="toggle-row"><input id="settingShowProfiles" type="checkbox" /><span><strong>Show profile switcher</strong><small>Display profile cards on Home.</small></span></label>
+        <label class="toggle-row"><input id="settingShowCategories" type="checkbox" /><span><strong>Show top categories</strong><small>Display category totals on Home.</small></span></label>
+        <label class="toggle-row"><input id="settingShowRecent" type="checkbox" /><span><strong>Show recent claims</strong><small>Display latest claims on Home.</small></span></label>
+        <label class="toggle-row"><input id="settingCompactList" type="checkbox" /><span><strong>Compact claim list</strong><small>Reduces spacing in Recent and Log views.</small></span></label>
+        <button class="primary-button" type="button" id="saveDashboardSettings">Save dashboard</button>
+      </section>
+
+      <section class="settings-panel" data-settings-panel="data">
+        <div class="data-actions">
+          <button class="secondary-button" type="button" id="exportJsonButton">Export JSON backup</button>
+          <button class="secondary-button" type="button" id="importJsonButton">Import JSON backup</button>
+          <input type="file" id="importJsonInput" accept="application/json,.json" hidden />
+          <button class="secondary-button" type="button" data-export-csv>Export claims CSV</button>
+          <button class="danger-button" type="button" id="clearAllClaimsButton">Clear all claims</button>
+        </div>
+        <p class="disclaimer inside">Data is stored locally in this browser/PWA. Use JSON backup before clearing Safari website data or changing devices.</p>
+      </section>
+    </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=2.4.0"></script>
+  <script src="app.js?v=3.0.0"></script>
 </body>
 </html>
