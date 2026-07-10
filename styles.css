@@ -66,27 +66,35 @@ button {
 }
 
 .material-symbols-rounded {
-  font-family: "Material Symbols Rounded";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  direction: ltr;
-  font-variation-settings: "FILL" 0, "wght" 560, "GRAD" 0, "opsz" 24;
-  font-feature-settings: "liga";
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  line-height: 0;
+  font-size: 0;
+  flex: 0 0 auto;
 }
 
-/* iOS Safari/PWA requires ligatures enabled or Material Symbols render as words. */
-.material-symbols-rounded::selection {
-  background: transparent;
+.material-symbols-rounded svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.05;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
+
+
+.icon-orb .material-symbols-rounded svg { width: 24px; height: 24px; }
+.icon-orb.mini .material-symbols-rounded svg { width: 22px; height: 22px; }
+.tab .material-symbols-rounded svg { width: 25px; height: 25px; }
+.floating-add .material-symbols-rounded svg { width: 29px; height: 29px; }
+.icon-button .material-symbols-rounded svg { width: 23px; height: 23px; }
+.primary-button .material-symbols-rounded svg { width: 22px; height: 22px; }
+.search-box .material-symbols-rounded svg { width: 21px; height: 21px; }
+.settings-list .material-symbols-rounded svg { width: 22px; height: 22px; }
 
 .app-shell {
   position: relative;
@@ -910,10 +918,6 @@ h2 {
   display: none !important;
 }
 
-/* Prevent raw Material Symbol ligature words like "close"/"person" flashing if Google Fonts is delayed. */
-html.icons-loading .material-symbols-rounded {
-  visibility: hidden;
-}
 .sheet-backdrop {
   position: fixed;
   inset: 0;
@@ -1003,7 +1007,17 @@ html.icons-loading .material-symbols-rounded {
     place-items: center;
     padding: 28px;
   }
-  .app-shell {
+  
+.icon-orb .material-symbols-rounded svg { width: 24px; height: 24px; }
+.icon-orb.mini .material-symbols-rounded svg { width: 22px; height: 22px; }
+.tab .material-symbols-rounded svg { width: 25px; height: 25px; }
+.floating-add .material-symbols-rounded svg { width: 29px; height: 29px; }
+.icon-button .material-symbols-rounded svg { width: 23px; height: 23px; }
+.primary-button .material-symbols-rounded svg { width: 22px; height: 22px; }
+.search-box .material-symbols-rounded svg { width: 21px; height: 21px; }
+.settings-list .material-symbols-rounded svg { width: 22px; height: 22px; }
+
+.app-shell {
     min-height: min(900px, calc(100dvh - 56px));
     height: min(900px, calc(100dvh - 56px));
     border-radius: 42px;

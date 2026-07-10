@@ -1,29 +1,47 @@
 const STORAGE_KEY = "lodgr.v2.state";
 
-initIconFont();
+const iconPaths = {
+  add: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+  analytics: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/>',
+  arrow_forward: '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+  attach_file: '<path d="m21 12.5-8.6 8.6a5.2 5.2 0 0 1-7.4-7.4l9.4-9.4a3.7 3.7 0 0 1 5.2 5.2l-9.5 9.5a2.1 2.1 0 0 1-3-3l8.7-8.7"/>',
+  bolt: '<path d="M13 2 4.5 13h6L9 22l10.5-13h-6L13 2Z"/>',
+  calendar_month: '<path d="M7 3v3"/><path d="M17 3v3"/><rect x="4" y="5" width="16" height="16" rx="4"/><path d="M4 10h16"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>',
+  calculate: '<rect x="5" y="3" width="14" height="18" rx="4"/><path d="M8 7h8"/><path d="M8 11h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/><path d="M8 15h.01"/><path d="M12 15h.01"/><path d="M16 15h.01"/><path d="M8 19h4"/><path d="M16 19h.01"/>',
+  check_circle: '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/>',
+  close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
+  cloud_upload: '<path d="M16 16l-4-4-4 4"/><path d="M12 12v9"/><path d="M20 17.5A4.5 4.5 0 0 0 17.7 9 6.5 6.5 0 0 0 5.1 10.6 4 4 0 0 0 6 18h2"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+  edit: '<path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  folder: '<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H10l2 2h6.5A2.5 2.5 0 0 1 21 9.5v7A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/>',
+  home: '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+  keyboard_arrow_down: '<path d="m6 9 6 6 6-6"/>',
+  lock: '<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  paid: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15.5 9.2A4.2 4.2 0 0 0 12 8c-2 0-3.2.9-3.2 2.2 0 3.3 6.4 1.4 6.4 4.7 0 1.3-1.3 2.1-3.4 2.1a5.4 5.4 0 0 1-3.6-1.2"/>',
+  person: '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>',
+  receipt_long: '<path d="M7 3h10a2 2 0 0 1 2 2v16l-3-1.6-2 1.6-2-1.6-2 1.6-2-1.6L5 21V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h4"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  settings: '<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1a2.2 2.2 0 0 1-3.1 3.1l-.1-.1a1.8 1.8 0 0 0-2-.4 1.8 1.8 0 0 0-1.1 1.6V21a2.2 2.2 0 0 1-4.4 0v-.2a1.8 1.8 0 0 0-1.1-1.6 1.8 1.8 0 0 0-2 .4l-.1.1a2.2 2.2 0 0 1-3.1-3.1l.1-.1a1.8 1.8 0 0 0 .4-2 1.8 1.8 0 0 0-1.6-1.1H3a2.2 2.2 0 0 1 0-4.4h.2a1.8 1.8 0 0 0 1.6-1.1 1.8 1.8 0 0 0-.4-2l-.1-.1a2.2 2.2 0 0 1 3.1-3.1l.1.1a1.8 1.8 0 0 0 2 .4A1.8 1.8 0 0 0 10.6 3V3a2.2 2.2 0 0 1 4.4 0v.2a1.8 1.8 0 0 0 1.1 1.6 1.8 1.8 0 0 0 2-.4l.1-.1a2.2 2.2 0 0 1 3.1 3.1l-.1.1a1.8 1.8 0 0 0-.4 2 1.8 1.8 0 0 0 1.6 1.1h.2a2.2 2.2 0 0 1 0 4.4h-.2a1.8 1.8 0 0 0-1.6 1.1Z"/>',
+  shield: '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
+  swap_horiz: '<path d="M7 7h13"/><path d="m16 3 4 4-4 4"/><path d="M17 17H4"/><path d="m8 13-4 4 4 4"/>',
+  tab_recent: '<path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h7"/><path d="M18 14v6"/><path d="m15 17 3 3 3-3"/>',
+  warning: '<path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.8 3h15.2a2 2 0 0 0 1.8-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v5"/><path d="M12 18h.01"/>',
+  workspaces: '<circle cx="7.5" cy="8" r="3.5"/><circle cx="16.5" cy="8" r="3.5"/><circle cx="12" cy="16" r="3.5"/>',
+  work: '<rect x="4" y="7" width="16" height="13" rx="3"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M4 12h16"/>',
+};
 
-function initIconFont() {
-  const root = document.documentElement;
+function hydrateIcons(container = document) {
+  container.querySelectorAll(".material-symbols-rounded:not([data-svg-icon])").forEach((node) => {
+    const name = node.textContent.trim();
+    node.dataset.svgIcon = name;
+    node.setAttribute("aria-hidden", "true");
+    node.innerHTML = iconSvg(name);
+  });
+}
 
-  if (!("fonts" in document)) {
-    root.classList.remove("icons-loading");
-    return;
-  }
-
-  document.fonts
-    .load('24px "Material Symbols Rounded"')
-    .then(() => {
-      root.classList.remove("icons-loading");
-    })
-    .catch(() => {
-      // Keep icons hidden rather than showing raw ligature text such as close/person.
-    });
-
-  window.setTimeout(() => {
-    if (document.fonts.check('24px "Material Symbols Rounded"')) {
-      root.classList.remove("icons-loading");
-    }
-  }, 1800);
+function iconSvg(name) {
+  const paths = iconPaths[name] || iconPaths.folder;
+  return `<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">${paths}</svg>`;
 }
 
 const categories = ["All", "Education", "Equipment", "Subscription", "Registration", "Travel", "Uniform", "Other"];
@@ -293,6 +311,7 @@ function renderAll() {
   renderExpenseFeeds();
   renderTax();
   renderHomeStats();
+  hydrateIcons();
 }
 
 function renderProfiles() {
@@ -367,6 +386,8 @@ function renderExpenseFeeds() {
   els.homeExpenseFeed.innerHTML = renderExpenseRows(allForActive.slice(0, 4));
   els.logExpenseFeed.innerHTML = renderExpenseRows(filtered, true);
   els.logCount.textContent = filtered.length;
+  hydrateIcons(els.homeExpenseFeed);
+  hydrateIcons(els.logExpenseFeed);
 }
 
 function renderExpenseRows(expenses, showEmpty = false) {
@@ -654,7 +675,7 @@ function registerServiceWorker() {
 
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("./sw.js?v=2.2.0", { updateViaCache: "none" })
+      .register("./sw.js?v=2.4.0", { updateViaCache: "none" })
       .then((registration) => {
         registration.update().catch(() => {});
 
