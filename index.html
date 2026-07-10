@@ -9,13 +9,13 @@
   <meta name="apple-mobile-web-app-title" content="Lodgr" />
   <title>Lodgr</title>
   <meta name="description" content="Lodgr — compact tax deduction tracker and refund estimator." />
-  <link rel="manifest" href="manifest.webmanifest?v=4.2.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=5.0.0" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=4.2.0" />
+  <link rel="stylesheet" href="styles.css?v=5.0.0" />
 </head>
 <body>
   <main class="app-shell" id="appShell">
@@ -105,45 +105,98 @@
     </section>
 
     <section class="screen" id="screen-tax" data-screen="tax">
-      <header class="topbar centered">
-        <span class="topbar-spacer"></span>
+      <header class="topbar tax-topbar">
         <h2>Tax</h2>
-        <button class="plain-icon" type="button" data-export-csv aria-label="Export CSV"><span class="svg-icon" data-icon="download"></span></button>
+        <button class="profile-pill" type="button" data-open-profile-switch aria-label="Switch active profile" aria-haspopup="dialog">
+          <span class="mini-avatar" id="taxProfileInitial">J</span>
+          <span id="taxProfileName">Profile</span>
+          <span class="svg-icon tiny" data-icon="chevron-down"></span>
+        </button>
       </header>
 
-      <section class="section no-top">
-        <button class="year-row" type="button" data-open-panel="appearance"><strong id="taxYearRow">FY 2025–26</strong><span class="svg-icon tiny" data-icon="chevron-down"></span></button>
-      </section>
-
-      <section class="section">
-        <div class="section-head"><p>Quick estimate</p><span id="taxProfileLabel">Profile</span></div>
-        <div class="calc-list">
-          <div><span>Total deductions</span><strong id="calcDeductions">$0.00</strong></div>
-          <div><span>Less reimbursements</span><strong id="calcReimbursements">− $0.00</strong></div>
-          <div><span>Taxable deductions</span><strong id="calcTaxableDeductions">$0.00</strong></div>
-          <div><span>Est. tax saving</span><strong class="green-text" id="calcSaving">$0.00</strong></div>
-          <div class="final"><span id="taxOutcomeLabel">Estimated outcome</span><strong id="taxOutcome">$0.00</strong></div>
+      <section class="tax-estimate" aria-live="polite">
+        <div class="tax-estimate-head">
+          <p id="taxEstimateYear">2025–26 estimate</p>
+          <span class="tax-live"><i></i> Updated now</span>
         </div>
-        <p class="microcopy">Estimate only. Not tax advice. Medicare and offsets are simplified.</p>
-      </section>
-
-      <section class="section">
-        <div class="section-head"><p>Key info</p><span>Tap to edit</span></div>
-        <label class="row-field"><span>Gross income</span><input id="grossIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" /></label>
-        <label class="row-field"><span>PAYG withheld</span><input id="taxWithheld" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" /></label>
-        <label class="row-field"><span>Other income</span><input id="otherIncome" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" /></label>
-        <label class="toggle-line"><span>Include Medicare levy</span><input id="includeMedicare" type="checkbox" /></label>
-        <label class="toggle-line"><span>HELP/HECS flag</span><input id="hasHelpDebt" type="checkbox" /></label>
-      </section>
-
-      <section class="section">
-        <div class="section-head"><p>Deduction checklist</p><span id="checklistScore">0/3</span></div>
-        <div class="check-list">
-          <div><span>Have you kept all receipts?</span><i id="receiptCheck" class="status-dot"></i></div>
-          <div><span>Are work-use percentages set?</span><i id="workUseCheck" class="status-dot"></i></div>
-          <div><span>Any reimbursements excluded?</span><i id="reimbursedCheck" class="status-dot"></i></div>
+        <strong class="tax-estimate-value" id="taxHeroOutcome">$0.00</strong>
+        <span class="tax-estimate-label" id="taxHeroLabel">Estimated refund</span>
+        <div class="tax-estimate-metrics">
+          <div><strong id="taxHeroTaxable">$0.00</strong><span>Taxable income</span></div>
+          <div><strong id="taxHeroCredits">$0.00</strong><span>Withholding</span></div>
+          <div><strong id="taxHeroLiability">$0.00</strong><span>Tax &amp; levies</span></div>
         </div>
       </section>
+
+      <section class="tax-menu-section">
+        <div class="tax-menu" id="taxMenu">
+          <button type="button" data-tax-section="income">
+            <span class="tax-menu-icon green"><span class="svg-icon" data-icon="banknote"></span></span>
+            <span><strong>Income &amp; withholding</strong><small id="taxRowIncomeDetail">Salary and PAYG</small></span>
+            <b id="taxRowIncome">$0.00</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="packaging">
+            <span class="tax-menu-icon purple"><span class="svg-icon" data-icon="gift"></span></span>
+            <span><strong>Salary packaging</strong><small id="taxRowPackagingDetail">Not added</small></span>
+            <b id="taxRowPackaging">Off</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="otherIncome">
+            <span class="tax-menu-icon blue"><span class="svg-icon" data-icon="layers"></span></span>
+            <span><strong>Other income</strong><small>Interest, dividends and more</small></span>
+            <b id="taxRowOtherIncome">$0.00</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="deductions">
+            <span class="tax-menu-icon blue"><span class="svg-icon" data-icon="receipt"></span></span>
+            <span><strong>Deductions</strong><small>Claims and personal super</small></span>
+            <b id="taxRowDeductions">$0.00</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="medicare">
+            <span class="tax-menu-icon green"><span class="svg-icon" data-icon="heart"></span></span>
+            <span><strong>Medicare</strong><small>Levy and exemption days</small></span>
+            <b id="taxRowMedicare">On</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="privateHealth">
+            <span class="tax-menu-icon purple"><span class="svg-icon" data-icon="shield"></span></span>
+            <span><strong>Private health cover</strong><small>Hospital cover and MLS</small></span>
+            <b id="taxRowPrivateHealth">No</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="studyLoan">
+            <span class="tax-menu-icon blue"><span class="svg-icon" data-icon="graduation"></span></span>
+            <span><strong>Study loan</strong><small>HELP, VSL and related loans</small></span>
+            <b id="taxRowStudyLoan">Off</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="family">
+            <span class="tax-menu-icon blue"><span class="svg-icon" data-icon="users"></span></span>
+            <span><strong>Spouse &amp; dependants</strong><small>Link another Lodgr profile</small></span>
+            <b id="taxRowFamily">Not added</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="offsets">
+            <span class="tax-menu-icon amber"><span class="svg-icon" data-icon="star"></span></span>
+            <span><strong>Tax offsets &amp; credits</strong><small>Franking credits and offsets</small></span>
+            <b id="taxRowOffsets">$0.00</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+          <button type="button" data-tax-section="advanced">
+            <span class="tax-menu-icon navy"><span class="svg-icon" data-icon="sliders"></span></span>
+            <span><strong>Income-test amounts</strong><small>Advanced HELP and MLS inputs</small></span>
+            <b id="taxRowAdvanced">Optional</b><span class="svg-icon tiny" data-icon="chevron-right"></span>
+          </button>
+        </div>
+
+        <button class="tax-snapshot-link" type="button" data-tax-section="breakdown">
+          <span class="tax-menu-icon purple"><span class="svg-icon" data-icon="chart"></span></span>
+          <span><strong>Quick snapshot</strong><small>See exactly how the estimate is calculated</small></span>
+          <span class="svg-icon tiny" data-icon="chevron-right"></span>
+        </button>
+      </section>
+
+      <p class="tax-disclaimer">Estimate only. Lodgr uses 2025–26 resident rates and simplified assumptions. Confirm your final return with the ATO or a registered tax agent.</p>
+
+      <!-- Legacy bindings retained for seamless upgrades from earlier Lodgr versions. -->
+      <div class="legacy-tax-bindings" aria-hidden="true">
+        <span id="taxYearRow"></span><span id="taxProfileLabel"></span><span id="calcDeductions"></span><span id="calcReimbursements"></span><span id="calcTaxableDeductions"></span><span id="calcSaving"></span><span id="taxOutcome"></span><span id="taxOutcomeLabel"></span>
+        <input id="grossIncome" type="number" /><input id="taxWithheld" type="number" /><input id="otherIncome" type="number" /><input id="includeMedicare" type="checkbox" /><input id="hasHelpDebt" type="checkbox" />
+        <span id="checklistScore"></span><i id="receiptCheck"></i><i id="workUseCheck"></i><i id="reimbursedCheck"></i>
+      </div>
     </section>
 
     <section class="screen" id="screen-profile" data-screen="profile">
@@ -252,9 +305,24 @@
       </div>
     </div>
 
+
+    <div class="sheet" id="taxDetailSheet" hidden>
+      <form class="sheet-card tax-detail-card" id="taxDetailForm">
+        <div class="sheet-grabber"></div>
+        <div class="tax-detail-head">
+          <button class="plain-icon tax-back" type="button" data-close-tax-detail aria-label="Close"><span class="svg-icon" data-icon="chevron-left"></span></button>
+          <div><p id="taxDetailEyebrow">Tax details</p><h3 id="taxDetailTitle">Income &amp; withholding</h3></div>
+          <label class="mini-switch" id="taxDetailMasterWrap" hidden><input id="taxDetailMaster" type="checkbox" /><span></span></label>
+        </div>
+        <div id="taxDetailBody"></div>
+        <div class="tax-detail-actions" id="taxDetailActions"><button class="primary full" type="submit">Save changes</button></div>
+      </form>
+    </div>
+
     <input id="importJsonInput" type="file" accept="application/json,.json" hidden />
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
-  <script src="app.js?v=4.2.0"></script>
+  <script src="app.js?v=5.0.0"></script>
+  <script src="tax-v5.js?v=5.0.0"></script>
 </body>
 </html>
