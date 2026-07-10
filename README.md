@@ -1,41 +1,17 @@
-# Lodgr v4.1 Refined Minimal
+# Lodgr v4.2 — Refined Home
 
-This build continues the compact, list-first direction and removes the remaining heavy UI elements.
+A local-first Safari PWA for logging Australian tax deductions and estimating a tax outcome.
 
-## What changed from v4
+## v4.2 changes
 
-- Removed the Home/Profile top settings gear.
-- Replaced the heavy Home action grid with a slimmer inline action strip.
-- Made the Home summary strip shorter and more compact.
-- Removed the Safari/iOS default button background that caused the grey/shadow effect behind Claims rows.
-- Flattened Claims list rows and tightened row spacing.
-- Reduced tab bar height slightly.
-- Standardised icon stroke weight and made category icon backgrounds more subtle.
-- Profile screen is now a cleaner settings-style list without redundant chrome.
+- Functional active-profile selector with a smooth bottom sheet
+- Add-profile action inside the selector
+- Titled financial-year overview with a dominant deductions total
+- Receipt progress and review status with clearer hierarchy
+- Larger, thumb-friendly quick actions
+- Five compact recent-claim rows on Home
+- Corrected Home claim alignment and horizontal overflow
+- Removed duplicate profile cards from Home
+- Existing profile, category, backup, claim-editing and tax-estimator features retained
 
-## Upload to GitHub Pages
-
-Upload the contents of this folder directly into your repository root:
-
-```text
-index.html
-styles.css
-app.js
-manifest.webmanifest
-sw.js
-assets/
-```
-
-Do not upload the folder itself as a subfolder.
-
-## Cache note
-
-After upload, delete the old Lodgr Home Screen icon and clear Safari website data for `jnikhanj.github.io` if the old UI remains cached.
-
-## Notes
-
-- Uses localStorage for profiles, categories, claims and settings.
-- Uses embedded inline SVG icons, so there is no Google icon font issue on iOS Safari.
-- Includes Add/Edit/Delete/Duplicate claim workflows.
-- Includes editable profiles, custom categories, appearance/dashboard settings, JSON backup/import and CSV export.
-- Tax estimate is a simplified prototype only.
+Upload all files in this folder to the root of the GitHub Pages repository.

@@ -3,47 +3,66 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#fbfaf7" />
+  <meta name="theme-color" content="#fffefa" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Lodgr" />
   <title>Lodgr</title>
   <meta name="description" content="Lodgr — compact tax deduction tracker and refund estimator." />
-  <link rel="manifest" href="manifest.webmanifest?v=4.1.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=4.2.0" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=4.1.0" />
+  <link rel="stylesheet" href="styles.css?v=4.2.0" />
 </head>
 <body>
   <main class="app-shell" id="appShell">
     <section class="screen is-active" id="screen-home" data-screen="home">
       <header class="topbar home-topbar">
         <h1>Lodgr</h1>
-        <button class="profile-pill" type="button" data-jump="profile" aria-label="Active profile">
+        <button class="profile-pill" type="button" data-open-profile-switch aria-label="Switch active profile" aria-haspopup="dialog">
           <span class="mini-avatar" id="topProfileInitial">J</span>
           <span id="topProfileName">Profile</span>
           <span class="svg-icon tiny" data-icon="chevron-down"></span>
         </button>
       </header>
 
-      <section class="summary-strip" aria-live="polite">
-        <div><strong id="homeDeductions">$0.00</strong><span>Deductions <i class="dot green"></i></span></div>
-        <div><strong id="homeReceiptRatio">0/0</strong><span>Receipts <i class="dot blue"></i></span></div>
-        <div><strong id="homeReviewCount">0</strong><span>Review <i class="dot amber"></i></span></div>
+      <section class="home-overview" aria-live="polite">
+        <p class="overview-title" id="homeYearTitle">2025–26 overview</p>
+        <div class="overview-primary">
+          <strong id="homeDeductions">$0.00</strong>
+          <span>Total deductions</span>
+        </div>
+        <div class="overview-meta">
+          <button class="overview-metric receipt-metric" type="button" data-jump="log">
+            <span><i class="dot blue"></i> Receipts</span>
+            <strong id="homeReceiptRatio">0 of 0</strong>
+            <span class="receipt-progress" aria-hidden="true"><i id="homeReceiptProgress"></i></span>
+          </button>
+          <span class="overview-divider" aria-hidden="true"></span>
+          <button class="overview-metric review-metric" type="button" data-jump="log">
+            <span>To review <i class="dot amber"></i></span>
+            <strong id="homeReviewCount">0</strong>
+            <span class="metric-hint">Open claim review</span>
+          </button>
+        </div>
       </section>
 
-      <section class="quick-strip" aria-label="Quick actions">
-        <button type="button" data-new-claim><span class="svg-icon green" data-icon="plus-circle"></span><span>Add claim</span></button>
-        <button type="button" data-jump="log"><span class="svg-icon blue" data-icon="receipt"></span><span>Review</span></button>
-        <button type="button" data-jump="tax"><span class="svg-icon purple" data-icon="calculator"></span><span>Estimate refund</span></button>
-      </section>
-
-      <section class="section compact-section" id="homeProfilesSection">
-        <div class="section-head"><p>Profiles</p><button type="button" data-jump="profile">Manage</button></div>
-        <div class="profile-chips" id="profileChips"></div>
+      <section class="home-actions" aria-label="Quick actions">
+        <button class="primary-action" type="button" data-new-claim>
+          <span class="action-icon"><span class="svg-icon green" data-icon="plus"></span></span>
+          <span>Add claim</span>
+        </button>
+        <button type="button" data-jump="log">
+          <span class="action-icon"><span class="svg-icon blue" data-icon="receipt"></span></span>
+          <span>Review</span>
+        </button>
+        <button type="button" data-jump="tax">
+          <span class="action-icon"><span class="svg-icon purple" data-icon="calculator"></span></span>
+          <span>Estimate</span>
+        </button>
       </section>
 
       <section class="section" id="homeRecentSection">
@@ -165,6 +184,21 @@
       <button class="tab" type="button" data-tab="profile"><span class="svg-icon" data-icon="person"></span><small>Profile</small></button>
     </nav>
 
+
+    <div class="sheet" id="profileSwitchSheet" hidden>
+      <div class="sheet-card profile-switch-card" role="dialog" aria-modal="true" aria-labelledby="profileSwitchTitle">
+        <div class="sheet-grabber"></div>
+        <div class="profile-switch-head">
+          <div>
+            <p>Active taxpayer</p>
+            <h3 id="profileSwitchTitle">Switch profile</h3>
+          </div>
+          <button type="button" class="plain-icon" data-close-profile-switch aria-label="Close profile selector"><span class="svg-icon" data-icon="close"></span></button>
+        </div>
+        <div class="profile-switch-list" id="profileSwitchList"></div>
+      </div>
+    </div>
+
     <div class="sheet" id="claimSheet" hidden>
       <form class="sheet-card compact-form" id="claimForm">
         <div class="sheet-grabber"></div>
@@ -221,6 +255,6 @@
     <input id="importJsonInput" type="file" accept="application/json,.json" hidden />
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
-  <script src="app.js?v=4.1.0"></script>
+  <script src="app.js?v=4.2.0"></script>
 </body>
 </html>

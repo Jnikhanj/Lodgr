@@ -1,5 +1,5 @@
 const STORAGE_KEY = "lodgr.v3.state";
-const APP_VERSION = "4.1.0";
+const APP_VERSION = "4.2.0";
 
 const iconPaths = {
   plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
@@ -71,20 +71,25 @@ boot();
 function boot(){
   Object.assign(els,{
     shell:$("#appShell"), screens:$$(".screen"), tabs:$$(".tab"), toast:$("#toast"),
-    topProfileInitial:$("#topProfileInitial"), topProfileName:$("#topProfileName"), homeDeductions:$("#homeDeductions"), homeReceiptRatio:$("#homeReceiptRatio"), homeReviewCount:$("#homeReviewCount"), profileChips:$("#profileChips"), homeClaimList:$("#homeClaimList"), categoryBars:$("#categoryBars"), homeProfilesSection:$("#homeProfilesSection"), homeCategoriesSection:$("#homeCategoriesSection"), homeRecentSection:$("#homeRecentSection"),
+    topProfileInitial:$("#topProfileInitial"), topProfileName:$("#topProfileName"), homeYearTitle:$("#homeYearTitle"), homeDeductions:$("#homeDeductions"), homeReceiptRatio:$("#homeReceiptRatio"), homeReceiptProgress:$("#homeReceiptProgress"), homeReviewCount:$("#homeReviewCount"), homeClaimList:$("#homeClaimList"), categoryBars:$("#categoryBars"), homeCategoriesSection:$("#homeCategoriesSection"), homeRecentSection:$("#homeRecentSection"),
     searchInput:$("#searchInput"), profileFilter:$("#profileFilter"), categoryFilter:$("#categoryFilter"), allClaimList:$("#allClaimList"), reviewFilterCount:$("#reviewFilterCount"), filterChips:$("#filterChips"),
     taxYearRow:$("#taxYearRow"), taxProfileLabel:$("#taxProfileLabel"), calcDeductions:$("#calcDeductions"), calcReimbursements:$("#calcReimbursements"), calcTaxableDeductions:$("#calcTaxableDeductions"), calcSaving:$("#calcSaving"), taxOutcome:$("#taxOutcome"), taxOutcomeLabel:$("#taxOutcomeLabel"), grossIncome:$("#grossIncome"), taxWithheld:$("#taxWithheld"), otherIncome:$("#otherIncome"), includeMedicare:$("#includeMedicare"), hasHelpDebt:$("#hasHelpDebt"), checklistScore:$("#checklistScore"), receiptCheck:$("#receiptCheck"), workUseCheck:$("#workUseCheck"), reimbursedCheck:$("#reimbursedCheck"),
     profileList:$("#profileList"),
     claimSheet:$("#claimSheet"), claimForm:$("#claimForm"), claimId:$("#claimId"), claimMode:$("#claimMode"), claimSheetTitle:$("#claimSheetTitle"), claimProfileId:$("#claimProfileId"), claimDate:$("#claimDate"), claimMerchant:$("#claimMerchant"), claimCategoryId:$("#claimCategoryId"), claimAmount:$("#claimAmount"), claimWorkUse:$("#claimWorkUse"), claimReceiptName:$("#claimReceiptName"), claimReimbursed:$("#claimReimbursed"), claimNotes:$("#claimNotes"), claimPreview:$("#claimPreview"), duplicateClaimButton:$("#duplicateClaimButton"), deleteClaimButton:$("#deleteClaimButton"),
     profileSheet:$("#profileSheet"), profileForm:$("#profileForm"), profileId:$("#profileId"), profileName:$("#profileName"), profileInitials:$("#profileInitials"), profileColor:$("#profileColor"), profilePreset:$("#profilePreset"), profileDefaultWorkUse:$("#profileDefaultWorkUse"), profileSheetTitle:$("#profileSheetTitle"), deleteProfileButton:$("#deleteProfileButton"),
     categorySheet:$("#categorySheet"), categoryForm:$("#categoryForm"), categoryId:$("#categoryId"), categoryName:$("#categoryName"), categoryIcon:$("#categoryIcon"), categoryColor:$("#categoryColor"), categoryDefaultWorkUse:$("#categoryDefaultWorkUse"), categoryRisk:$("#categoryRisk"), categoryReceiptRequired:$("#categoryReceiptRequired"), categoryHidden:$("#categoryHidden"), categorySheetTitle:$("#categorySheetTitle"), deleteCategoryButton:$("#deleteCategoryButton"),
-    panelSheet:$("#panelSheet"), panelTitle:$("#panelTitle"), panelBody:$("#panelBody"), importJsonInput:$("#importJsonInput")
+    panelSheet:$("#panelSheet"), panelTitle:$("#panelTitle"), panelBody:$("#panelBody"), importJsonInput:$("#importJsonInput"),
+    profileSwitchSheet:$("#profileSwitchSheet"), profileSwitchList:$("#profileSwitchList")
   });
   bindEvents(); normalizeState(); hydrateIcons(); populateOptions(); applySettings(); showScreen(state.activeScreen||state.settings.startScreen||"home", false); renderAll(); registerServiceWorker();
 }
 function bindEvents(){
   els.tabs.forEach(t=>t.addEventListener("click",()=>showScreen(t.dataset.tab)));
   document.addEventListener("click", e=>{
+    if(e.target.closest("[data-open-profile-switch]")){openProfileSwitch();return;}
+    if(e.target.closest("[data-close-profile-switch]")){closeSheet(els.profileSwitchSheet);return;}
+    const profileChoice=e.target.closest("[data-profile-choice]"); if(profileChoice){switchProfile(profileChoice.dataset.profileChoice,true);return;}
+    if(e.target.closest("[data-add-profile-switch]")){closeSheet(els.profileSwitchSheet);openProfileSheet();return;}
     const jump=e.target.closest("[data-jump]"); if(jump){showScreen(jump.dataset.jump);return;}
     if(e.target.closest("[data-new-claim]")){openClaimSheet();return;}
     if(e.target.closest("[data-new-profile]")){openProfileSheet();return;}
@@ -97,7 +102,7 @@ function bindEvents(){
     if(e.target.closest("[data-clear-sample]")){clearSampleData();return;}
     if(e.target.closest("[data-reset-all]")){resetAllData();return;}
   });
-  [els.claimSheet,els.profileSheet,els.categorySheet,els.panelSheet].forEach(sheet=>sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet(sheet)}));
+  [els.claimSheet,els.profileSheet,els.categorySheet,els.panelSheet,els.profileSwitchSheet].forEach(sheet=>sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet(sheet)}));
   els.claimForm.addEventListener("submit",saveClaim); els.profileForm.addEventListener("submit",saveProfile); els.categoryForm.addEventListener("submit",saveCategory);
   [els.claimAmount,els.claimWorkUse,els.claimReimbursed].forEach(el=>el.addEventListener("input",renderClaimPreview));
   els.claimCategoryId.addEventListener("change",()=>{const c=getCategory(els.claimCategoryId.value); if(!els.claimId.value && c) els.claimWorkUse.value=c.defaultWorkUse??100; renderClaimPreview();});
@@ -116,8 +121,9 @@ function populateOptions(){
 function renderAll(){applySettings();renderFilters();renderProfiles();renderCategories();renderClaims();renderTaxForm();renderStats();hydrateIcons();}
 function applySettings(){
   const s=state.settings||{}; document.documentElement.dataset.accent=s.accent||"green"; document.documentElement.dataset.theme=s.theme||"system";
-  els.homeProfilesSection.classList.toggle("hidden",s.showProfiles===false); els.homeCategoriesSection.classList.toggle("hidden",s.showCategories===false); els.homeRecentSection.classList.toggle("hidden",s.showRecent===false);
+  els.homeCategoriesSection.classList.toggle("hidden",s.showCategories===false); els.homeRecentSection.classList.toggle("hidden",s.showRecent===false);
   els.taxYearRow.textContent=`FY ${s.taxYear||"2025–26"}`;
+  if(els.homeYearTitle) els.homeYearTitle.textContent=`${s.taxYear||"2025–26"} overview`;
 }
 function showScreen(name,save=true){
   if(!["home","log","tax","profile"].includes(name)) name="home"; els.screens.forEach(s=>s.classList.toggle("is-active",s.dataset.screen===name)); els.tabs.forEach(t=>t.classList.toggle("is-active",t.dataset.tab===name)); if(save){state.activeScreen=name;persist();} window.scrollTo({top:0,behavior:"smooth"});
@@ -125,7 +131,8 @@ function showScreen(name,save=true){
 function renderStats(){
   const active=activeProfile(); if(!active)return; const deductions=totalDeductions(active.id); const activeClaims=state.expenses.filter(e=>e.profileId===active.id); const withReceipts=activeClaims.filter(e=>e.receiptName).length; const review=activeClaims.filter(e=>statusFor(e)!=="strong"&&!e.reimbursed).length;
   els.topProfileInitial.textContent=active.initials||makeInitials(active.name); els.topProfileName.textContent=active.name; els.topProfileInitial.className=`mini-avatar ${active.color||"navy"}`;
-  els.homeDeductions.textContent=money(deductions); els.homeReceiptRatio.textContent=`${withReceipts}/${activeClaims.length}`; els.homeReviewCount.textContent=review;
+  els.homeDeductions.textContent=money(deductions); els.homeReceiptRatio.textContent=`${withReceipts} of ${activeClaims.length}`; els.homeReviewCount.textContent=review;
+  if(els.homeReceiptProgress) els.homeReceiptProgress.style.width=`${activeClaims.length?Math.round(withReceipts/activeClaims.length*100):0}%`;
   els.reviewFilterCount.textContent=state.expenses.filter(e=>statusFor(e)==="review"||statusFor(e)==="risky").length;
   const reimb=state.expenses.filter(e=>e.profileId===active.id&&e.reimbursed).reduce((a,e)=>a+claimable(e,true),0); const taxableDed=Math.max(0,deductions-reimb); const tax=calculateTax(active,taxableDed); const saving=estimateSaving(active,taxableDed);
   els.taxProfileLabel.textContent=active.name; els.calcDeductions.textContent=money(deductions); els.calcReimbursements.textContent=`− ${money(reimb)}`; els.calcTaxableDeductions.textContent=money(taxableDed); els.calcSaving.textContent=money(saving);
@@ -134,10 +141,12 @@ function renderStats(){
   els.receiptCheck.className=`status-dot ${receiptsOk?"ok":"warn"}`; els.workUseCheck.className=`status-dot ${workOk?"ok":"warn"}`; els.reimbursedCheck.className=`status-dot ${reimbOk?"ok":"warn"}`; els.checklistScore.textContent=`${okCount}/3`;
 }
 function renderProfiles(){
-  els.profileChips.innerHTML=state.profiles.map(p=>`<button type="button" class="profile-chip ${p.id===state.activeProfileId?"is-active":""}" data-switch-profile="${p.id}"><span class="avatar ${p.color||"navy"}">${esc(p.initials||makeInitials(p.name))}</span><span><strong>${esc(p.name)}</strong><small>${money(totalDeductions(p.id))}</small></span></button>`).join("")+`<button type="button" class="profile-chip" data-new-profile><span class="avatar">+</span><span><strong>Add</strong><small>Profile</small></span></button>`;
-  els.profileChips.querySelectorAll("[data-switch-profile]").forEach(b=>b.addEventListener("click",()=>switchProfile(b.dataset.switchProfile)));
   els.profileList.innerHTML=state.profiles.map(p=>`<button class="profile-line ${p.id===state.activeProfileId?"is-active":""}" type="button" data-edit-profile="${p.id}"><span class="avatar ${p.color||"navy"}">${esc(p.initials||makeInitials(p.name))}</span><span><strong>${esc(p.name)}</strong><small>${esc(p.preset||"General employee")}</small></span><span class="amount">${money(totalDeductions(p.id))}<br><small>Deductions</small></span></button>`).join("");
   els.profileList.querySelectorAll("[data-edit-profile]").forEach(b=>b.addEventListener("click",()=>openProfileSheet(b.dataset.editProfile)));
+  if(els.profileSwitchList){
+    els.profileSwitchList.innerHTML=state.profiles.map(p=>`<button class="profile-switch-row ${p.id===state.activeProfileId?"is-active":""}" type="button" data-profile-choice="${p.id}"><span class="avatar ${p.color||"navy"}">${esc(p.initials||makeInitials(p.name))}</span><span class="profile-switch-copy"><strong>${esc(p.name)}</strong><small>${esc(p.preset||"General employee")}</small></span><span class="profile-switch-amount">${money(totalDeductions(p.id))}</span>${p.id===state.activeProfileId?'<span class="profile-check">✓</span>':'<span class="svg-icon tiny" data-icon="chevron-right"></span>'}</button>`).join("")+`<button class="profile-switch-row add-profile-row" type="button" data-add-profile-switch><span class="avatar add-avatar">+</span><span class="profile-switch-copy"><strong>Add another profile</strong><small>Create a separate taxpayer record</small></span><span class="svg-icon tiny" data-icon="chevron-right"></span></button>`;
+    hydrateIcons(els.profileSwitchList);
+  }
 }
 function renderFilters(){
   els.profileFilter.innerHTML=`<option value="all">All profiles</option><option value="active">Active profile</option>`+state.profiles.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join(""); els.profileFilter.value=state.profileFilter||"all";
@@ -147,16 +156,21 @@ function renderFilters(){
   els.filterChips.querySelectorAll("button[data-status]").forEach(b=>b.classList.toggle("is-active",b.dataset.status===(state.statusFilter||"all")));
 }
 function renderClaims(){
-  const all=filteredClaims(); const recent=state.expenses.filter(e=>e.profileId===state.activeProfileId).sort(byDate).slice(0,4);
-  els.homeClaimList.innerHTML=recent.length?recent.map(claimRow).join(""):`<div class="empty">No claims yet. Add one to start your register.</div>`;
+  const all=filteredClaims(); const recent=state.expenses.filter(e=>e.profileId===state.activeProfileId).sort(byDate).slice(0,5);
+  els.homeClaimList.innerHTML=recent.length?recent.map(homeClaimRow).join(""):`<div class="empty">No claims yet. Add one to start your register.</div>`;
   els.allClaimList.innerHTML=all.length?all.map(e=>claimRow(e,true)).join(""):`<div class="empty">No matching claims.</div>`;
   [...els.homeClaimList.querySelectorAll("[data-edit-claim]"),...els.allClaimList.querySelectorAll("[data-edit-claim]")].forEach(b=>b.addEventListener("click",()=>openClaimSheet(b.dataset.editClaim)));
   renderStats(); hydrateIcons();
 }
+function homeClaimRow(e){
+  const c=getCategory(e.categoryId)||{}; const p=getProfile(e.profileId)||{}; const st=statusFor(e); const statusText=e.reimbursed?"Excluded":st==="strong"?"Approved":st==="risky"?"Risky":"Review"; const color=c.color||"navy";
+  const active=activeProfile(); const profileSuffix=p.id!==active?.id?` · ${esc(p.name||"")}`:"";
+  return `<button class="home-claim-row" type="button" data-edit-claim="${e.id}"><span class="claim-icon accent-${color}"><span class="svg-icon" data-icon="${c.icon||"folder"}"></span></span><span class="claim-main"><strong>${esc(e.merchant)}</strong><small>${esc(c.name||"Other")} · ${formatDay(e.date)} · ${num(e.workUse)}%${profileSuffix}</small></span><span class="claim-amount"><strong>${money(claimable(e))}</strong><small class="status ${st}">${statusText}</small></span><span class="svg-icon tiny chev" data-icon="chevron-right"></span></button>`;
+}
 function claimRow(e,full=false){
   const c=getCategory(e.categoryId)||{}; const p=getProfile(e.profileId)||{}; const st=statusFor(e); const statusText=e.reimbursed?"Excluded":st==="strong"?"Approved":st==="risky"?"Risky":"Review"; const color=c.color||"navy";
   if(full){return `<button class="claim-row" type="button" data-edit-claim="${e.id}"><span class="claim-icon accent-${color}"><span class="svg-icon" data-icon="${c.icon||"folder"}"></span></span><span class="date-cell">${formatDay(e.date)}<br>${formatYear(e.date)}</span><span class="claim-main"><strong>${esc(e.merchant)}</strong><small>${esc(c.name||"Other")} · ${num(e.workUse)}% · ${esc(p.name||"")}</small></span><span class="claim-amount"><strong>${money(claimable(e))}</strong><small class="status ${st}">${statusText}</small></span><span class="svg-icon tiny chev" data-icon="chevron-right"></span></button>`}
-  return `<button class="claim-row" type="button" data-edit-claim="${e.id}"><span class="claim-icon accent-${color}"><span class="svg-icon" data-icon="${c.icon||"folder"}"></span></span><span class="claim-main"><strong>${esc(e.merchant)}</strong><small>${formatDate(e.date)} · ${num(e.workUse)}% · ${esc(p.name||"")}</small></span><span class="claim-amount"><strong>${money(claimable(e))}</strong><small class="status ${st}">${statusText}</small></span><span class="svg-icon tiny chev" data-icon="chevron-right"></span></button>`;
+  return homeClaimRow(e);
 }
 function renderCategories(){
   const totals={}; state.expenses.filter(e=>e.profileId===state.activeProfileId && !e.reimbursed).forEach(e=>{totals[e.categoryId]=(totals[e.categoryId]||0)+claimable(e)}); const entries=Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,4); const max=Math.max(1,...entries.map(e=>e[1]));
@@ -186,7 +200,7 @@ function openPanel(kind){
   const s=state.settings; const catList=()=>`<div class="panel-body-list">${state.categories.map(c=>`<button type="button" class="category-admin-line" data-edit-category="${c.id}"><span class="claim-icon accent-${c.color}"><span class="svg-icon" data-icon="${c.icon}"></span></span><span><strong>${esc(c.name)}</strong><small>${c.risk} · ${c.defaultWorkUse}% default${c.hidden?" · hidden":""}</small></span><span class="svg-icon tiny" data-icon="chevron-right"></span></button>`).join("")}</div><div class="panel-actions"><button type="button" class="primary" data-add-category>Add category</button></div>`;
   const panels={
     appearance:["Appearance",`<div class="panel-body-list"><label class="panel-row"><span>Theme</span><select id="pTheme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><label class="panel-row"><span>Accent</span><select id="pAccent">${colors.map(c=>`<option value="${c}">${title(c)}</option>`).join("")}</select></label><label class="panel-row"><span>Financial year</span><input id="pTaxYear" value="${esc(s.taxYear||"2025–26")}" /></label><label class="panel-row"><span>Start screen</span><select id="pStart"><option value="home">Home</option><option value="log">Claims</option><option value="tax">Tax</option><option value="profile">Profile</option></select></label><label class="panel-row"><span>Currency decimals</span><input id="pDecimals" type="checkbox" ${s.currencyDecimals!==false?"checked":""}/></label></div><div class="panel-actions"><button class="primary" type="button" data-save-appearance>Save</button></div>`],
-    dashboard:["Dashboard",`<div class="panel-body-list"><label class="panel-row"><span>Show profiles</span><input id="pShowProfiles" type="checkbox" ${s.showProfiles!==false?"checked":""}/></label><label class="panel-row"><span>Show categories</span><input id="pShowCategories" type="checkbox" ${s.showCategories!==false?"checked":""}/></label><label class="panel-row"><span>Show recent claims</span><input id="pShowRecent" type="checkbox" ${s.showRecent!==false?"checked":""}/></label></div><div class="panel-actions"><button class="primary" type="button" data-save-dashboard>Save</button></div>`],
+    dashboard:["Dashboard",`<div class="panel-body-list"><label class="panel-row"><span>Show categories</span><input id="pShowCategories" type="checkbox" ${s.showCategories!==false?"checked":""}/></label><label class="panel-row"><span>Show recent claims</span><input id="pShowRecent" type="checkbox" ${s.showRecent!==false?"checked":""}/></label></div><div class="panel-actions"><button class="primary" type="button" data-save-dashboard>Save</button></div>`],
     categories:["Categories",catList()],
     backup:["Backup",`<div class="panel-actions"><button class="primary" type="button" data-export-json>Export JSON</button><button class="ghost" type="button" data-import-json>Import JSON</button><button class="ghost" type="button" data-export-csv>Export CSV</button></div><p class="microcopy">JSON backup keeps profiles, settings, categories and claims.</p>`]
   };
@@ -197,11 +211,12 @@ function panelClick(e){
   const edit=e.target.closest("[data-edit-category]"); if(edit){closeSheet(els.panelSheet);openCategorySheet(edit.dataset.editCategory);return;}
   if(e.target.closest("[data-add-category]")){closeSheet(els.panelSheet);openCategorySheet();return;}
   if(e.target.closest("[data-save-appearance]")){state.settings.theme=$("#pTheme").value;state.settings.accent=$("#pAccent").value;state.settings.taxYear=$("#pTaxYear").value.trim()||"2025–26";state.settings.startScreen=$("#pStart").value;state.settings.currencyDecimals=$("#pDecimals").checked;persist();closeSheet(els.panelSheet);renderAll();toast("Appearance saved");return;}
-  if(e.target.closest("[data-save-dashboard]")){state.settings.showProfiles=$("#pShowProfiles").checked;state.settings.showCategories=$("#pShowCategories").checked;state.settings.showRecent=$("#pShowRecent").checked;persist();closeSheet(els.panelSheet);renderAll();toast("Dashboard saved");return;}
+  if(e.target.closest("[data-save-dashboard]")){state.settings.showCategories=$("#pShowCategories").checked;state.settings.showRecent=$("#pShowRecent").checked;persist();closeSheet(els.panelSheet);renderAll();toast("Dashboard saved");return;}
   if(e.target.closest("[data-export-json]")){exportJson();return;} if(e.target.closest("[data-import-json]")){els.importJsonInput.click();return;} if(e.target.closest("[data-export-csv]")){exportCsv();return;}
 }
 function openSheet(sheet){sheet.hidden=false;document.body.style.overflow="hidden";} function closeSheet(sheet){sheet.hidden=true;document.body.style.overflow="";}
-function switchProfile(idv){if(!getProfile(idv))return;state.activeProfileId=idv;persist();renderAll();}
+function openProfileSwitch(){renderProfiles();openSheet(els.profileSwitchSheet);}
+function switchProfile(idv,closeSelector=false){if(!getProfile(idv))return;if(idv===state.activeProfileId){if(closeSelector)closeSheet(els.profileSwitchSheet);return;} const home=$("#screen-home");home?.classList.add("profile-refreshing");state.activeProfileId=idv;state.profileFilter="active";persist();renderAll();if(closeSelector)closeSheet(els.profileSwitchSheet);requestAnimationFrame(()=>requestAnimationFrame(()=>home?.classList.remove("profile-refreshing")));toast(`Switched to ${getProfile(idv)?.name||"profile"}`);}
 function filteredClaims(){let list=[...state.expenses]; const q=(state.search||"").toLowerCase(); if(state.profileFilter==="active") list=list.filter(e=>e.profileId===state.activeProfileId); else if(state.profileFilter&&state.profileFilter!=="all") list=list.filter(e=>e.profileId===state.profileFilter); if(state.categoryFilter&&state.categoryFilter!=="all") list=list.filter(e=>e.categoryId===state.categoryFilter); if(state.statusFilter&&state.statusFilter!=="all") list=list.filter(e=>statusFor(e)===state.statusFilter); if(q) list=list.filter(e=>[e.merchant,e.notes,getCategory(e.categoryId)?.name,getProfile(e.profileId)?.name].join(" ").toLowerCase().includes(q)); return list.sort(byDate);}
 function statusFor(e){if(e.reimbursed)return"excluded"; const c=getCategory(e.categoryId)||{}; if(c.risk==="Risky")return"risky"; if(!e.receiptName && c.receiptRequired)return"review"; if(Number(e.workUse)<100 && ["Review","Risky"].includes(c.risk))return"review"; return"strong";}
 function claimable(e,ignoreReimb=false){if(e.reimbursed&&!ignoreReimb)return 0; return round2(Number(e.amount||0)*Number(e.workUse||0)/100);}
@@ -223,4 +238,4 @@ function hydrateIcons(root=document){root.querySelectorAll(".svg-icon[data-icon]
 function toast(msg){els.toast.textContent=msg;els.toast.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>els.toast.classList.remove("show"),1800)}
 function downloadFile(name,content,type){const blob=new Blob([content],{type});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href)}
 function money(n){const decimals=state.settings?.currencyDecimals!==false?2:0;return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",minimumFractionDigits:decimals,maximumFractionDigits:decimals}).format(Number(n||0))} function num(n){return Math.round(Number(n||0))} function val(el){return Number(el.value||0)} function round2(n){return Math.round((n+Number.EPSILON)*100)/100} function clone(x){return JSON.parse(JSON.stringify(x))} function id(){return (crypto?.randomUUID?.()||`id-${Date.now()}-${Math.random().toString(36).slice(2)}`)} function esc(s){return String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))} function csv(v){const s=String(v??"");return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s} function title(s){return String(s).charAt(0).toUpperCase()+String(s).slice(1)} function makeInitials(name){return String(name||"?").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"?"} function cleanZero(v){return Number(v||0)===0?"":String(v)} function byDate(a,b){return String(b.date).localeCompare(String(a.date))||Number(b.createdAt||0)-Number(a.createdAt||0)} function formatDate(d){return new Date(`${d}T00:00:00`).toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"})} function formatDay(d){return new Date(`${d}T00:00:00`).toLocaleDateString("en-AU",{day:"numeric",month:"short"})} function formatYear(d){return new Date(`${d}T00:00:00`).getFullYear()} function dateStamp(){return new Date().toISOString().slice(0,10)}
-function registerServiceWorker(){if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js?v=4.0.0").catch(()=>{});}}
+function registerServiceWorker(){if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js?v=4.2.0").catch(()=>{});}}
